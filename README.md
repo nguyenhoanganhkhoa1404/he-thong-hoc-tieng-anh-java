@@ -3,14 +3,14 @@
 ## Tổng quan
 
 Website học tiếng Anh với kiến trúc Front-end + Back-end (RESTful API), sử dụng Firebase làm cơ sở dữ liệu.
-
+```
 Team Leader: Nguyễn Hoàng Anh Khoa - 2280601527
 Team Members: Nguyễn Thành Phú - 2280602412
               Huỳnh Phúc Xuân Mai - 2280601885
               Nguyễn Quốc Vượng - 2280603779
               Nguyễn Minh Tiến - 2280603225
               Trần Mỹ Tâm - 2280602849
-
+```
 ## Cấu trúc thư mục
 
 ### Back-end (Spring Boot)
