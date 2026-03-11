@@ -223,7 +223,7 @@ cors.allow-credentials=true
 
 ---
 
-### 3. Nhóm 1 – Auth & User Management (`auth_nhom1`)
+### 3. Nhóm 1 – Auth & User Management (`auth_nhom1`) - Tiến
 
 **Phạm vi**: Đăng ký, đăng nhập, đăng xuất, quản lý hồ sơ người dùng.
 
@@ -244,7 +244,7 @@ cors.allow-credentials=true
 
 ---
 
-### 4. Nhóm 2 – Placement & Vocabulary & Grammar (`vocabulary_grammar_nhom2`)
+### 4. Nhóm 2 – Placement & Vocabulary & Grammar (`vocabulary_grammar_nhom2`) - Phú
 
 **Phạm vi**: Xác định trình độ, học từ vựng và ngữ pháp.
 
@@ -265,7 +265,7 @@ cors.allow-credentials=true
 
 ---
 
-### 5. Nhóm 3 – Listening & Speaking (`listening_speaking_nhom3`)
+### 5. Nhóm 3 – Listening & Speaking (`listening_speaking_nhom3`) - Tâm
 
 **Phạm vi**: Luyện nghe, nói, và một phần đọc hiểu.
 
@@ -286,7 +286,7 @@ cors.allow-credentials=true
 
 ---
 
-### 6. Nhóm 4 – Writing, Quiz & Progress (`reading_writing_quiz_progress_nhom4`)
+### 6. Nhóm 4 – Writing, Quiz & Progress (`reading_writing_quiz_progress_nhom4`) - Mai
 
 **Phạm vi**: Luyện viết, quiz tương tác và theo dõi tiến độ.
 
@@ -307,7 +307,7 @@ cors.allow-credentials=true
 
 ---
 
-### 7. Nhóm 5 – Achievements, Plan & Forum (`learning_plan_forum_nhom5`)
+### 7. Nhóm 5 – Achievements, Plan & Forum (`learning_plan_forum_nhom5`) - Vượng
 
 **Phạm vi**: Thành tựu, kế hoạch học tập và diễn đàn.
 
@@ -328,7 +328,7 @@ cors.allow-credentials=true
 
 ---
 
-### 8. Nhóm 6 – Teacher / Admin (`teacher_admin_nhom6`)
+### 8. Nhóm 6 – Teacher / Admin (`teacher_admin_nhom6`) - Khoa
 
 **Phạm vi**: Quản lý giáo viên, khoá học và thông báo hệ thống.
 
