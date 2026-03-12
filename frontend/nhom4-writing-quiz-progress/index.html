@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Writing, Quiz & Progress – Nhóm 4</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .panel-header h1 { margin: 0; font-size: 1.5rem; }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .writing-feedback { margin-top: 1rem; padding: 1rem; border-radius: var(--radius); background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .quiz-question { margin-bottom: 1.5rem; padding: 1rem; background: var(--bg); border-radius: var(--radius); }
+    .quiz-options { list-style: none; padding: 0; margin: 0; }
+    .quiz-options li { margin: 0.5rem 0; }
+    .progress-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .progress-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; text-align: center; }
+    .progress-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; color: var(--text-muted); }
+    .progress-card .value { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
+    .skill-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+    .skill-row span:first-child { width: 90px; font-weight: 500; }
+    .skill-bar-wrap { flex: 1; height: 20px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .skill-bar { height: 100%; background: var(--primary); border-radius: 4px; }
+    .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="panel-header">
+      <h1>Writing, Quiz & Progress (Nhóm 4)</h1>
+    </header>
+
+    <nav class="tabs">
+      <button type="button" class="tab active" data-tab="writing">Luyện viết</button>
+      <button type="button" class="tab" data-tab="quiz">Quiz tương tác</button>
+      <button type="button" class="tab" data-tab="progress">Tiến độ học</button>
+    </nav>
+
+    <section id="section-writing" class="section-content active">
+      <div class="card">
+        <h2 class="card-title">Bài tập viết (Chức năng 10)</h2>
+        <div class="form-group">
+          <label>Lesson ID</label>
+          <input type="text" class="form-control" id="writingLessonId" value="lesson-1">
+        </div>
+        <div class="form-group">
+          <label>Đề bài</label>
+          <input type="text" class="form-control" id="writingPrompt" value="Write 2-3 sentences about your daily routine.">
+        </div>
+        <div class="form-group">
+          <label>Bài viết của bạn</label>
+          <textarea class="form-control" id="writingContent" rows="6" placeholder="Nhập câu hoặc đoạn văn..."></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" id="btnSubmitWriting">Nộp bài / Xem gợi ý</button>
+        <div id="writingAlert" class="alert d-none mt-2"></div>
+        <div id="writingFeedback" class="writing-feedback d-none mt-2"></div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">Bài viết đã lưu</h2>
+        <div class="form-group d-flex gap-1">
+          <input type="text" class="form-control" id="writingUserId" value="user-demo" placeholder="User ID">
+          <button type="button" class="btn btn-secondary" id="btnLoadWritings">Xem danh sách</button>
+        </div>
+        <div id="writingList"></div>
+        <div id="writingEmpty" class="empty-state d-none">Chưa có bài viết nào.</div>
+      </div>
+    </section>
+
+    <section id="section-quiz" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Quiz tương tác (Chức năng 11)</h2>
+        <div class="form-group">
+          <label>Lesson ID</label>
+          <div class="d-flex gap-1 align-center">
+            <input type="text" class="form-control" id="quizLessonId" value="lesson-1">
+            <button type="button" class="btn btn-primary" id="btnLoadQuiz">Bắt đầu làm bài</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>User ID</label>
+          <input type="text" class="form-control" id="quizUserId" value="user-demo">
+        </div>
+        <div id="quizArea" class="d-none">
+          <p>Thời gian: <span id="quizTimer">0</span> giây</p>
+          <form id="formQuiz"></form>
+          <button type="button" class="btn btn-success mt-2" id="btnSubmitQuiz">Nộp bài</button>
+        </div>
+        <div id="quizResult" class="alert d-none mt-2"></div>
+      </div>
+    </section>
+
+    <section id="section-progress" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Tiến độ học (Chức năng 12)</h2>
+        <div class="form-group d-flex gap-1">
+          <input type="text" class="form-control" id="progressUserId" value="user-demo" placeholder="User ID">
+          <button type="button" class="btn btn-primary" id="btnLoadProgress">Tải tiến độ</button>
+        </div>
+        <div id="progressOverview" class="d-none">
+          <div class="progress-cards">
+            <div class="progress-card">
+              <h3>Bài đã hoàn thành</h3>
+              <div class="value" id="progressTotal">0</div>
+            </div>
+            <div class="progress-card">
+              <h3>Điểm trung bình</h3>
+              <div class="value" id="progressAvg">0</div>
+            </div>
+            <div class="progress-card">
+              <h3>Level</h3>
+              <div class="value" id="progressLevel">-</div>
+            </div>
+          </div>
+          <h3 class="card-title">Theo kỹ năng</h3>
+          <div id="progressBySkill"></div>
+        </div>
+        <div id="progressEmpty" class="empty-state">Nhấn "Tải tiến độ" để xem.</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="writing-quiz-progress.js"></script>
+</body>
+</html>
