@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Nhóm 6 – Teacher / Admin (Khoa)
@@ -46,6 +47,20 @@ public class TeacherAdminController {
         return ResponseEntity.ok(teachers);
     }
 
+    @GetMapping("/teachers/{uid}")
+    public ResponseEntity<TeacherAccountDto> getTeacher(@PathVariable String uid) {
+        return teacherAdminService.getTeacher(uid)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/teachers/{uid}/approve")
+    public ResponseEntity<TeacherAccountDto> approveTeacher(@PathVariable String uid) {
+        return teacherAdminService.approveTeacher(uid)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/teachers/{uid}")
     public ResponseEntity<TeacherAccountDto> updateTeacher(
             @PathVariable String uid,
@@ -73,6 +88,13 @@ public class TeacherAdminController {
     public ResponseEntity<List<CourseDto>> listCourses() {
         List<CourseDto> courses = teacherAdminService.listCourses();
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/courses/{courseId}")
+    public ResponseEntity<CourseDto> getCourse(@PathVariable String courseId) {
+        return teacherAdminService.getCourse(courseId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/courses/{courseId}")
