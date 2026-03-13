@@ -17,7 +17,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // ==========================================
-// 3. CHỨC NĂNG 4: PLACEMENT TEST
+// 3. CHỨC NĂNG 4: PLACEMENT TEST (Nâng cấp Progress)
 // ==========================================
 const btnStartTest = document.getElementById('btnStartTest');
 const formPlacementTest = document.getElementById('formPlacementTest');
@@ -33,12 +33,20 @@ btnStartTest?.addEventListener('click', () => {
             formPlacementTest.classList.remove('d-none');
             resultContainer.classList.add('d-none');
             
-            questionsList.innerHTML = questions.map((q, index) => `
-                <div class="question-block">
+            // Hiển thị thanh tiến trình ở đầu danh sách câu hỏi
+            questionsList.innerHTML = `
+                <div class="progress-container" style="margin-bottom: 20px; padding: 10px; background: #f0f7ff; border-radius: 8px;">
+                    <div id="testProgress" style="font-weight: bold; color: var(--primary);">
+                        Tiến độ: 0/${questions.length} câu đã chọn
+                    </div>
+                </div>
+            ` + questions.map((q, index) => `
+                <div class="question-block" style="border-left: 4px solid #eee; padding-left: 15px; margin-bottom: 20px;">
                     <p><strong>Câu ${index + 1}:</strong> ${q.questionText}</p>
                     ${q.options.map(opt => `
-                        <label class="option-label">
-                            <input type="radio" name="${q.id}" value="${opt}" required> ${opt}
+                        <label class="option-label" style="display: block; margin: 8px 0; cursor: pointer;">
+                            <input type="radio" name="${q.id}" value="${opt}" required 
+                                   onchange="updateTestProgress(${questions.length})"> ${opt}
                         </label>
                     `).join('')}
                 </div>
@@ -46,6 +54,19 @@ btnStartTest?.addEventListener('click', () => {
         })
         .catch(err => console.error('Lỗi tải câu hỏi:', err));
 });
+
+// Hàm cập nhật trạng thái tiến độ làm bài
+window.updateTestProgress = function(total) {
+    const selectedCount = document.querySelectorAll('#questionsList input[type="radio"]:checked').length;
+    const progressText = document.getElementById('testProgress');
+    if (progressText) {
+        progressText.textContent = `Tiến độ: ${selectedCount}/${total} câu đã chọn`;
+        if (selectedCount === total) {
+            progressText.style.color = "#28a745"; // Đổi sang màu xanh lá khi xong
+            progressText.textContent += " - Đã sẵn sàng nộp bài! ✨";
+        }
+    }
+};
 
 formPlacementTest?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -74,7 +95,7 @@ document.getElementById('btnRetake')?.addEventListener('click', () => {
 });
 
 // ==========================================
-// 4. CHỨC NĂNG 5: HỌC TỪ VỰNG (Có nút Học xong)
+// 4. CHỨC NĂNG 5: HỌC TỪ VỰNG
 // ==========================================
 const btnLoadVocab = document.getElementById('btnLoadVocab');
 const vocabList = document.getElementById('vocabList');
@@ -87,22 +108,22 @@ btnLoadVocab?.addEventListener('click', () => {
         .then(res => res.json())
         .then(data => {
             if (data.length === 0) {
-                vocabList.innerHTML = '<tr><td colspan="5" class="text-center">Trống</td></tr>';
+                vocabList.innerHTML = '<tr><td colspan="5" class="text-center">Hiện chưa có từ vựng cho mục này</td></tr>';
                 return;
             }
             vocabList.innerHTML = data.map(item => {
                 const statusIcon = item.learned ? '✅' : '❌';
                 const actionBtn = item.learned 
-                    ? '' 
-                    : `<button class="btn btn-outline btn-sm" onclick="markAsLearned('${item.id}', this)" style="padding: 2px 8px; font-size: 0.8rem; margin-left: 10px;">Học xong</button>`;
+                    ? '<span class="text-muted" style="font-size: 0.8rem;">Đã thuộc</span>' 
+                    : `<button class="btn btn-primary btn-sm" onclick="markAsLearned('${item.id}', this)" style="padding: 2px 10px;">Học xong</button>`;
                 
                 return `
-                    <tr>
+                    <tr style="transition: all 0.3s;">
                         <td><strong>${item.word}</strong></td>
-                        <td>${item.pronunciation}</td>
+                        <td style="color: var(--primary); font-family: monospace;">${item.pronunciation}</td>
                         <td>${item.meaning}</td>
-                        <td><em>${item.example}</em></td>
-                        <td id="status-${item.id}">
+                        <td style="font-style: italic; color: #666;">"${item.example}"</td>
+                        <td id="status-${item.id}" class="text-center">
                             ${statusIcon} ${actionBtn}
                         </td>
                     </tr>
@@ -111,21 +132,20 @@ btnLoadVocab?.addEventListener('click', () => {
         });
 });
 
-// Hàm toàn cục để gọi từ thuộc tính onclick
 window.markAsLearned = function(id, btnElement) {
     fetch(`${API_BASE}/vocabulary/mark-learned/${id}`, { method: 'POST' })
         .then(res => {
             if (res.ok) {
                 const td = document.getElementById(`status-${id}`);
-                td.innerHTML = '✅'; 
-                console.log(`Đã học xong từ: ${id}`);
+                td.innerHTML = '✅ <span class="text-muted" style="font-size: 0.8rem;">Đã thuộc</span>';
+                console.log(`Cập nhật thành công từ vựng: ${id}`);
             }
         })
-        .catch(err => alert('Lỗi: ' + err.message));
+        .catch(err => alert('Lỗi hệ thống: ' + err.message));
 };
 
 // ==========================================
-// 5. CHỨC NĂNG 6: HỌC NGỮ PHÁP
+// 5. CHỨC NĂNG 6: HỌC NGỮ PHÁP (Nâng cấp giao diện Card)
 // ==========================================
 const btnLoadGrammar = document.getElementById('btnLoadGrammar');
 const grammarList = document.getElementById('grammarList');
@@ -137,14 +157,19 @@ btnLoadGrammar?.addEventListener('click', () => {
         .then(res => res.json())
         .then(data => {
             if (data.length === 0) {
-                grammarList.innerHTML = '<div class="text-center">Trống</div>';
+                grammarList.innerHTML = '<div class="text-center text-muted">Đang cập nhật nội dung...</div>';
                 return;
             }
             grammarList.innerHTML = data.map(item => `
-                <div class="grammar-lesson" style="margin-bottom:1rem; padding:1rem; border-left:4px solid var(--primary); background:#f9f9f9;">
-                    <h3>${item.title}</h3>
-                    <p><strong>Cách dùng:</strong> ${item.usage}</p>
-                    <p><strong>Ví dụ:</strong> <em>${item.example}</em></p>
+                <div class="grammar-card" style="margin-bottom: 20px; padding: 20px; border-radius: 12px; border: 1px solid var(--border); background: white; box-shadow: var(--shadow-sm);">
+                    <h3 style="margin-top: 0; color: var(--primary); display: flex; align-items: center;">
+                        <span style="background: var(--primary); color: white; border-radius: 50%; width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-right: 10px;">?</span>
+                        ${item.title}
+                    </h3>
+                    <div style="background: #fdfdfd; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                        <p><strong>💡 Cách dùng:</strong> ${item.usage}</p>
+                        <p style="margin-bottom: 0;"><strong>📝 Ví dụ:</strong> <span style="color: #2c3e50; font-style: italic;">"${item.example}"</span></p>
+                    </div>
                 </div>
             `).join('');
         });
