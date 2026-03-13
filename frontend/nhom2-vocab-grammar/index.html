@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Học Từ vựng & Ngữ pháp (Nhóm 2)</title>
+  <link rel="stylesheet" href="../styles.css"> 
+  <style>
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .question-block { margin-bottom: 1.5rem; padding: 1rem; background: var(--bg); border-radius: var(--radius); }
+    .option-label { display: block; margin: 0.5rem 0 0 1rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="panel-header" style="margin-bottom: 1.5rem;">
+      <h1>Học Từ vựng & Ngữ pháp (Nhóm 2)</h1>
+    </header>
+
+    <nav class="tabs">
+      <button type="button" class="tab active" data-tab="placement">Kiểm tra đầu vào</button>
+      <button type="button" class="tab" data-tab="vocabulary">Từ vựng (Sắp ra mắt)</button>
+      <button type="button" class="tab" data-tab="grammar">Ngữ pháp (Sắp ra mắt)</button>
+    </nav>
+
+    <section id="section-placement" class="section-content active">
+      <div class="card">
+        <h2 class="card-title">Bài Kiểm Tra Trình Độ (Placement Test)</h2>
+        <div id="placementAlert" class="alert d-none"></div>
+
+        <div id="testContainer">
+          <p>Hãy làm bài kiểm tra ngắn này để hệ thống đánh giá trình độ tiếng Anh hiện tại của bạn nhé!</p>
+          <button id="btnStartTest" class="btn btn-primary mt-1">Bắt đầu làm bài</button>
+        </div>
+
+        <form id="formPlacementTest" class="d-none mt-2">
+          <div id="questionsList"></div>
+          <button type="submit" class="btn btn-success mt-2">Nộp bài</button>
+        </form>
+
+        <div id="resultContainer" class="d-none mt-2">
+          <div class="alert alert-info">
+            <h3 style="margin-top: 0;">Kết quả của bạn</h3>
+            <p>Số câu đúng: <strong id="resScore" class="text-success"></strong> / <span id="resTotal"></span></p>
+            <p>Trình độ đánh giá: <strong id="resLevel" style="font-size: 1.2rem; color: var(--primary);"></strong></p>
+            <button id="btnRetake" class="btn btn-outline mt-1">Làm lại</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="vocab-grammar.js"></script>
+</body>
+</html>
