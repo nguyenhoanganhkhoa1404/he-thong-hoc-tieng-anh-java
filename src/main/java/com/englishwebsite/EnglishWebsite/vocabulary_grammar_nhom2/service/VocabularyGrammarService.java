@@ -1,135 +1,146 @@
 package com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.service;
 
 import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.*;
-import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections; // Cần thiết để xào bài ngẫu nhiên
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
 
 @Service
 public class VocabularyGrammarService {
 
-    private final Map<String, String> correctAnswers = new HashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(VocabularyGrammarService.class);
 
-    public VocabularyGrammarService() {
-        // --- 1. ĐÁP ÁN BÀI KIỂM TRA ĐẦU VÀO ---
-        correctAnswers.put("q1", "am");
-        correctAnswers.put("q2", "does");
-        correctAnswers.put("q3", "went");
-        correctAnswers.put("q4", "has been");
-        correctAnswers.put("q5", "would have");
+    // Dùng Dependency Injection cực kỳ chuẩn bài
+    private final Firestore db;
+
+    // Bộ nhớ đệm (Cache) để tăng tốc Web
+    private List<QuestionDto> cachedPlacementQuestions = null;
+    private List<GrammarLessonDto> cachedGrammarLessons = null;
+
+    // Spring Boot tự động Inject Bean Firestore vào đây
+    public VocabularyGrammarService(Firestore db) {
+        this.db = db;
     }
 
     // ======================================================
-    // CHỨC NĂNG 5: HỌC TỪ VỰNG (🔥 RANDOM 5 TỪ TỪ FIRESTORE 🔥)
+    // 1. HỌC TỪ VỰNG (RANDOM 5 TỪ TỪ FIRESTORE)
     // ======================================================
     public List<VocabularyItemDto> getVocabulary(String topic, String level) {
         List<VocabularyItemDto> allItems = new ArrayList<>();
-        
         try {
-            Firestore db = FirestoreClient.getFirestore();
-            CollectionReference vocabRef = db.collection("vocabulary");
-
-            // 1. Lấy một "cụm" dữ liệu (ví dụ 50 từ) để làm kho trộn ngẫu nhiên
-            Query query = vocabRef.whereEqualTo("level", level).limit(50);
-            ApiFuture<QuerySnapshot> querySnapshot = query.get();
-
-            for (QueryDocumentSnapshot doc : querySnapshot.get().getDocuments()) {
+            Query query = db.collection("vocabulary").whereEqualTo("level", level).limit(50);
+            for (QueryDocumentSnapshot doc : query.get().get().getDocuments()) {
                 allItems.add(new VocabularyItemDto(
-                    doc.getId(),
-                    doc.getString("word"),
-                    doc.getString("meaning"),
-                    doc.getString("example"),
-                    doc.getString("pronunciation"),
-                    topic, 
-                    level, 
-                    false
+                    doc.getId(), doc.getString("word"), doc.getString("meaning"),
+                    doc.getString("example"), doc.getString("pronunciation"),
+                    topic, level, false
                 ));
             }
 
-            // 2. Xử lý ngẫu nhiên nếu có dữ liệu
             if (!allItems.isEmpty()) {
-                // Xào bài ngẫu nhiên
                 Collections.shuffle(allItems);
-                
-                // Rút ra 5 từ đầu tiên (hoặc ít hơn nếu kho không đủ 5 từ)
-                int numberOfItems = Math.min(allItems.size(), 5);
-                List<VocabularyItemDto> randomFive = allItems.subList(0, numberOfItems);
-                
-                System.out.println("🎲 [RANDOM] Đã bốc 5 từ ngẫu nhiên cho Ritchi từ Level: " + level);
-                return randomFive;
-            } else {
-                System.out.println("⚠️ Không tìm thấy từ, dùng data dự phòng.");
-                return getBackupData(topic, level);
+                return allItems.subList(0, Math.min(allItems.size(), 5));
             }
-
-        } catch (InterruptedException | ExecutionException e) {
-            System.err.println("❌ Lỗi: " + e.getMessage());
-            return getBackupData(topic, level);
+        } catch (Exception e) {
+            log.error("❌ Lỗi lấy từ vựng từ Firestore: ", e);
         }
-    }
-
-    private List<VocabularyItemDto> getBackupData(String topic, String level) {
-        return Arrays.asList(
-            new VocabularyItemDto("v1", "Map", "Bản đồ", "I need a map.", "/mæp/", topic, level, false),
-            new VocabularyItemDto("v2", "Ticket", "Vé", "Show your ticket.", "/ˈtɪk.ɪt/", topic, level, false)
-        );
+        return getBackupData(topic, level);
     }
 
     // ======================================================
-    // CHỨC NĂNG 4: PLACEMENT TEST (GIỮ NGUYÊN)
+    // 2. KIỂM TRA ĐẦU VÀO (LẤY TỪ FIRESTORE + CACHE)
     // ======================================================
     public List<QuestionDto> getPlacementQuestions() {
-        return Arrays.asList(
-            new QuestionDto("q1", "I ___ a student.", Arrays.asList("am", "is", "are")),
-            new QuestionDto("q2", "What ___ she do every morning?", Arrays.asList("do", "does", "did")),
-            new QuestionDto("q3", "Yesterday, they ___ to the cinema.", Arrays.asList("go", "goes", "went")),
-            new QuestionDto("q4", "She ___ studying English for 5 years.", Arrays.asList("is", "has been", "was")),
-            new QuestionDto("q5", "If I had known, I ___ told you.", Arrays.asList("will", "would have", "should"))
-        );
+        if (cachedPlacementQuestions != null && !cachedPlacementQuestions.isEmpty()) {
+            log.info("⚡ Lấy Placement Questions từ Cache");
+            return cachedPlacementQuestions;
+        }
+
+        List<QuestionDto> questions = new ArrayList<>();
+        try {
+            QuerySnapshot querySnapshot = db.collection("placement_questions").get().get();
+            for (QueryDocumentSnapshot doc : querySnapshot.getDocuments()) {
+                questions.add(new QuestionDto(
+                    doc.getId(), doc.getString("questionText"), (List<String>) doc.get("options")
+                ));
+            }
+            cachedPlacementQuestions = questions;
+            log.info("☁️ Đã tải và lưu Cache Placement Questions từ Firestore");
+        } catch (Exception e) {
+            log.error("❌ Lỗi Firestore (Placement): ", e);
+        }
+        return questions;
     }
 
     public PlacementTestResultDto gradePlacementTest(PlacementSubmissionDto submission) {
         int score = 0;
-        if (submission.getAnswers() != null) {
-            for (Map.Entry<String, String> entry : submission.getAnswers().entrySet()) {
-                String correct = correctAnswers.get(entry.getKey());
-                if (correct != null && correct.equals(entry.getValue())) score++;
+        int total = 0;
+        try {
+            QuerySnapshot querySnapshot = db.collection("placement_questions").get().get();
+            total = querySnapshot.size();
+
+            for (QueryDocumentSnapshot doc : querySnapshot.getDocuments()) {
+                String correctAns = doc.getString("correctAnswer");
+                String userAns = submission.getAnswers().get(doc.getId());
+                if (correctAns != null && correctAns.equals(userAns)) score++;
             }
-        }
-        String level = (score >= 4) ? "B1 (Intermediate)" : (score >= 2) ? "A2 (Pre-Elementary)" : "A1 (Beginner)";
-        return new PlacementTestResultDto(score, 5, level);
+        } catch (Exception e) { log.error("Lỗi chấm điểm: ", e); }
+
+        String level = (score >= (total * 0.8)) ? "B1" : (score >= (total * 0.4)) ? "A2" : "A1";
+        return new PlacementTestResultDto(score, total, level);
     }
 
     // ======================================================
-    // CHỨC NĂNG 6: NGỮ PHÁP & BÀI TẬP (GIỮ NGUYÊN)
+    // 3. NGỮ PHÁP & BÀI TẬP (LẤY TỪ FIRESTORE + CACHE)
     // ======================================================
     public List<GrammarLessonDto> getGrammarLessons(String level) {
-        List<GrammarLessonDto> list = new ArrayList<>();
-        if ("A1".equalsIgnoreCase(level)) {
-            list.add(new GrammarLessonDto("g1", "Present Simple", "Diễn tả thói quen.", "I study every day."));
-        } else if ("A2".equalsIgnoreCase(level)) {
-            list.add(new GrammarLessonDto("g2", "Past Simple", "Hành động đã kết thúc.", "I finished work yesterday."));
+        if (cachedGrammarLessons != null && !cachedGrammarLessons.isEmpty()) {
+            log.info("⚡ Lấy Grammar Lessons từ Cache");
+            return cachedGrammarLessons.stream()
+                    .filter(l -> l.getLevel().equalsIgnoreCase(level))
+                    .toList();
         }
-        return list;
+
+        List<GrammarLessonDto> lessons = new ArrayList<>();
+        try {
+            QuerySnapshot querySnapshot = db.collection("grammar_lessons").get().get();
+            for (QueryDocumentSnapshot doc : querySnapshot.getDocuments()) {
+                lessons.add(new GrammarLessonDto(
+                    doc.getId(), doc.getString("title"), doc.getString("description"),
+                    doc.getString("example"), doc.getString("level")
+                ));
+            }
+            cachedGrammarLessons = lessons;
+            log.info("☁️ Đã tải và lưu Cache toàn bộ Grammar Lessons từ Firestore");
+
+            return lessons.stream().filter(l -> l.getLevel().equalsIgnoreCase(level)).toList();
+        } catch (Exception e) { log.error("Lỗi Firestore (Grammar): ", e); }
+        return lessons;
     }
 
     public List<GrammarExerciseDto> getExercisesByLevel(String level) {
+        List<GrammarExerciseDto> exercises = new ArrayList<>();
+        try {
+            Query query = db.collection("grammar_exercises").whereEqualTo("level", level);
+            for (QueryDocumentSnapshot doc : query.get().get().getDocuments()) {
+                exercises.add(new GrammarExerciseDto(
+                    doc.getId(), doc.getString("question"), doc.getString("answer"), level
+                ));
+            }
+        } catch (Exception e) { log.error("Lỗi: ", e); }
+        return exercises;
+    }
+
+    private List<VocabularyItemDto> getBackupData(String topic, String level) {
         return Arrays.asList(
-            new GrammarExerciseDto("e1", "I (be) ___ a student.", "am", level),
-            new GrammarExerciseDto("e2", "She (work) ___ here.", "works", level)
+            new VocabularyItemDto("v1", "Map", "Bản đồ", "I need a map.", "/mæp/", topic, level, false)
         );
     }
 
     public void markAsLearned(String id) {
-        System.out.println("Đã đánh dấu học từ ID: " + id);
+        System.out.println("✅ Đã đánh dấu học từ ID: " + id);
     }
 }

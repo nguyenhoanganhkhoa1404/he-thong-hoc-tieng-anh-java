@@ -1,0 +1,138 @@
+{
+  "placement_questions": [
+    { "questionText": "I ___ a 4th-year student.", "options": ["am", "is", "are"], "correctAnswer": "am" },
+    { "questionText": "He ___ a new branch on Git yesterday.", "options": ["create", "created", "creating"], "correctAnswer": "created" },
+    { "questionText": "I ___ Java since I started university.", "options": ["learn", "learned", "have learned"], "correctAnswer": "have learned" },
+    { "questionText": "If the script ___ an error, please check the logs.", "options": ["return", "returns", "returned"], "correctAnswer": "returns" },
+    { "questionText": "They ___ coding when I arrived at the lab.", "options": ["are", "were", "had been"], "correctAnswer": "were" },
+    { "questionText": "By next month, we ___ our graduation project.", "options": ["finish", "will have finished", "finished"], "correctAnswer": "will have finished" },
+    { "questionText": "The software ___ updated automatically every night.", "options": ["is", "was", "has"], "correctAnswer": "is" },
+    { "questionText": "I ___ to the library when I saw my professor.", "options": ["walked", "was walking", "have walked"], "correctAnswer": "was walking" },
+    { "questionText": "This is the laptop ___ I bought for programming.", "options": ["who", "whom", "which"], "correctAnswer": "which" },
+    { "questionText": "I don't mind ___ you with your React code.", "options": ["to help", "help", "helping"], "correctAnswer": "helping" },
+    { "questionText": "She asked me where I ___ my API keys.", "options": ["left", "have left", "had left"], "correctAnswer": "had left" },
+    { "questionText": "You ___ better save your Blender project before closing.", "options": ["had", "would", "should"], "correctAnswer": "had" },
+    { "questionText": "Despite ___ hard, the app still crashed.", "options": ["tried", "trying", "try"], "correctAnswer": "trying" },
+    { "questionText": "The server ___ down for maintenance tomorrow at 2 AM.", "options": ["is going to be", "will being", "has been"], "correctAnswer": "is going to be" },
+    { "questionText": "We will deploy the app as soon as testing ___.", "options": ["will finish", "finishes", "finished"], "correctAnswer": "finishes" },
+    { "questionText": "Rarely ___ such an elegant piece of code.", "options": ["I have seen", "have I seen", "I saw"], "correctAnswer": "have I seen" },
+    { "questionText": "It's high time you ___ backing up your database.", "options": ["start", "started", "had started"], "correctAnswer": "started" },
+    { "questionText": "He acts as if he ___ the senior developer here.", "options": ["is", "was", "were"], "correctAnswer": "were" },
+    { "questionText": "Only after the launch ___ that there was a critical bug.", "options": ["they realized", "did they realize", "they had realized"], "correctAnswer": "did they realize" },
+    { "questionText": "The compilation process takes ___ longer than expected.", "options": ["much", "more", "very"], "correctAnswer": "much" }
+  ],
+  "grammar_lessons": [
+    {
+      "title": "Thì Hiện tại đơn (Present Simple)",
+      "description": "Diễn tả thói quen, sự thật hiển nhiên hoặc lịch trình cố định.",
+      "example": "I play Minecraft every weekend.",
+      "level": "A1"
+    },
+    {
+      "title": "Thì Hiện tại tiếp diễn (Present Continuous)",
+      "description": "Hành động đang xảy ra tại thời điểm nói hoặc kế hoạch tương lai gần.",
+      "example": "He is rigging a 3D model in Blender right now.",
+      "level": "A1"
+    },
+    {
+      "title": "Danh từ đếm được và không đếm được",
+      "description": "Cách sử dụng a/an/some/any với các loại danh từ.",
+      "example": "I need some information about the Flutter framework.",
+      "level": "A1"
+    },
+    {
+      "title": "Thì Quá khứ đơn (Past Simple)",
+      "description": "Hành động đã bắt đầu và kết thúc hoàn toàn trong quá khứ.",
+      "example": "We developed a cross-platform app last semester.",
+      "level": "A2"
+    },
+    {
+      "title": "Thì Quá khứ tiếp diễn (Past Continuous)",
+      "description": "Hành động đang xảy ra tại một thời điểm xác định trong quá khứ.",
+      "example": "I was writing ASP.NET code when the power went out.",
+      "level": "A2"
+    },
+    {
+      "title": "Thì Tương lai đơn (Future Simple)",
+      "description": "Diễn tả quyết định tức thời, dự đoán hoặc lời hứa.",
+      "example": "I will fix this CSS bug tomorrow.",
+      "level": "A2"
+    },
+    {
+      "title": "Thì Hiện tại hoàn thành (Present Perfect)",
+      "description": "Hành động bắt đầu ở quá khứ kéo dài đến hiện tại.",
+      "example": "I have used Spring Boot for my backend projects.",
+      "level": "B1"
+    },
+    {
+      "title": "Câu điều kiện loại 1 (Conditional Type 1)",
+      "description": "Diễn tả sự việc có thể xảy ra ở hiện tại hoặc tương lai.",
+      "example": "If the API works, the web will show data.",
+      "level": "B1"
+    },
+    {
+      "title": "Câu điều kiện loại 2 (Conditional Type 2)",
+      "description": "Diễn tả tình huống giả định, không có thật ở hiện tại.",
+      "example": "If I had more RAM, I would run the emulator smoother.",
+      "level": "B1"
+    },
+    {
+      "title": "Câu bị động (Passive Voice)",
+      "description": "Nhấn mạnh đối tượng chịu tác động thay vì người thực hiện.",
+      "example": "The database was updated successfully.",
+      "level": "B1"
+    },
+    {
+      "title": "Danh động từ và Động từ nguyên thể (Gerunds & Infinitives)",
+      "description": "Sử dụng V-ing hoặc To-V sau các động từ nhất định.",
+      "example": "He suggested using PyTorch for the AI model.",
+      "level": "B1"
+    },
+    {
+      "title": "Mệnh đề quan hệ (Relative Clauses)",
+      "description": "Sử dụng who, whom, which, that để bổ nghĩa cho danh từ.",
+      "example": "The developer who wrote this algorithm is brilliant.",
+      "level": "B2"
+    },
+    {
+      "title": "Câu tường thuật (Reported Speech)",
+      "description": "Thuật lại lời nói của người khác, cần lùi thì và đổi ngôi.",
+      "example": "The user said that the Cobblemon mod was lagging.",
+      "level": "B2"
+    },
+    {
+      "title": "Thì Quá khứ hoàn thành (Past Perfect)",
+      "description": "Hành động hoàn tất trước một hành động khác trong quá khứ.",
+      "example": "I had committed the changes before my laptop died.",
+      "level": "B2"
+    },
+    {
+      "title": "Đảo ngữ (Inversion)",
+      "description": "Đưa trợ động từ lên trước chủ ngữ để nhấn mạnh.",
+      "example": "Not only does it run fast, but it also consumes less memory.",
+      "level": "C1"
+    }
+  ],
+  "grammar_exercises": [
+    { "question": "She (be) ___ a good frontend developer.", "answer": "is", "level": "A1" },
+    { "question": "Look! The progress bar (move) ___.", "answer": "is moving", "level": "A1" },
+    { "question": "I don't have (some/any) ___ errors in my console.", "answer": "any", "level": "A1" },
+    { "question": "They (play) ___ co-op games every night.", "answer": "play", "level": "A1" },
+    { "question": "Yesterday, I (go) ___ to the IT lab.", "answer": "went", "level": "A2" },
+    { "question": "While I (study) ___, my phone rang.", "answer": "was studying", "level": "A2" },
+    { "question": "I promise I (send) ___ the documentation later.", "answer": "will send", "level": "A2" },
+    { "question": "We (build) ___ a UDP chat app last month.", "answer": "built", "level": "A2" },
+    { "question": "I (not see) ___ him since we started the project.", "answer": "have not seen", "level": "B1" },
+    { "question": "If it rains, we (stay) ___ home to code.", "answer": "will stay", "level": "B1" },
+    { "question": "If I had a better GPU, I (render) ___ it faster.", "answer": "would render", "level": "B1" },
+    { "question": "The new feature (release) ___ next week.", "answer": "will be released", "level": "B1" },
+    { "question": "I enjoy (listen) ___ to indie music while coding.", "answer": "listening", "level": "B1" },
+    { "question": "The laptop (which/who) ___ is on the desk is mine.", "answer": "which", "level": "B2" },
+    { "question": "She said she (be) ___ tired of debugging.", "answer": "was", "level": "B2" },
+    { "question": "They (leave) ___ before the meeting started.", "answer": "had left", "level": "B2" },
+    { "question": "The man (who/which) ___ is presenting is our Leader.", "answer": "who", "level": "B2" },
+    { "question": "By 2026, he (graduate) ___ from university.", "answer": "will have graduated", "level": "B2" },
+    { "question": "Hardly (have I) ___ seen such clean code.", "answer": "had I", "level": "C1" },
+    { "question": "It is crucial that the server (be) ___ restarted.", "answer": "be", "level": "C1" }
+  ]
+}

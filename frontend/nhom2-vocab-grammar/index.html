@@ -6,14 +6,25 @@
   <title>Học Từ vựng & Ngữ pháp (Nhóm 2)</title>
   <link rel="stylesheet" href="../styles.css"> 
   <style>
+    /* =========================================
+       CSS CƠ BẢN & CHUYỂN TAB
+       ========================================= */
+    :root {
+      --primary-color: #4361ee;
+      --primary-light: #e0e7ff;
+      --success-color: #2a9d8f;
+      --danger-color: #e76f51;
+      --card-bg: #ffffff;
+      --text-main: #2b2d42;
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+
     .section-content { display: none; }
     .section-content.active { display: block; }
-    .question-block { margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ddd; }
-    .option-label { display: block; margin: 0.5rem 0 0 1rem; cursor: pointer; }
-    .grammar-lesson { padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary); }
-
+    
     /* =========================================
-       CSS CHO FLASHCARD 3D (MỚI CẬP NHẬT)
+       CSS CHO FLASHCARD 3D
        ========================================= */
     .vocab-grid {
       display: grid;
@@ -54,7 +65,7 @@
       padding: 20px;
       border-radius: 15px;
       background: white;
-      border: 2px solid var(--primary);
+      border: 2px solid var(--primary-color);
       text-align: center;
     }
 
@@ -63,7 +74,7 @@
       transform: rotateY(180deg);
     }
 
-    .flashcard-front h2 { color: var(--primary); margin: 10px 0; }
+    .flashcard-front h2 { color: var(--primary-color); margin: 10px 0; }
     .pronunciation { color: #666; font-family: monospace; font-size: 1.1rem; }
     
     .btn-speak {
@@ -83,18 +94,177 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      background: var(--primary);
+      background: var(--primary-color);
       color: white;
       padding: 2px 8px;
       border-radius: 4px;
       font-size: 0.75rem;
+    }
+
+    /* =========================================
+       CSS PLACEMENT TEST (UI TRẮC NGHIỆM)
+       ========================================= */
+    .progress-container {
+      background: linear-gradient(135deg, var(--primary-color), #3a0ca3);
+      color: white;
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.2);
+    }
+
+    .question-block {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+      margin-bottom: 20px;
+      border: 1px solid #edf2f7;
+      transition: var(--transition);
+    }
+    .question-block:hover {
+      border-color: var(--primary-light);
+      box-shadow: 0 6px 15px rgba(67, 97, 238, 0.08);
+    }
+
+    .question-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 15px;
+      border-left: 4px solid var(--primary-color);
+      padding-left: 10px;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      background: #f8fafc;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      color: #475569;
+      margin: 0;
+    }
+
+    .option-label:hover {
+      background: var(--primary-light);
+      border-color: #a3bffa;
+    }
+
+    .option-label input[type="radio"] { display: none; }
+    .option-label:has(input[type="radio"]:checked) {
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+
+    /* =========================================
+       CSS NGỮ PHÁP & BÀI TẬP
+       ========================================= */
+    .grammar-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      border: 1px solid #edf2f7;
+      transition: var(--transition);
+    }
+    .grammar-card:hover {
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      transform: translateY(-3px);
+    }
+
+    .grammar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--primary-color);
+      border-bottom: 2px dashed #edf2f7;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+
+    .grammar-icon {
+      background: var(--primary-light);
+      color: var(--primary-color);
+      width: 35px; height: 35px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: bold;
+    }
+
+    .grammar-content {
+      background: #f8fafc;
+      padding: 15px 20px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    .exercise-area {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      margin-top: 15px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .exercise-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .exercise-item:last-child { border-bottom: none; }
+
+    .exercise-input {
+      padding: 8px 15px;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      transition: var(--transition);
+      font-weight: 600;
+      width: 180px;
+    }
+    .exercise-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-check-ex {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .btn-check-ex:hover {
+      background: #344ceb;
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="panel-header" style="margin-bottom: 1.5rem;">
-      <h1>Học Từ vựng & Ngữ pháp (Nhóm 2)</h1>
+      <h1>Học Từ vựng & Ngữ pháp</h1>
     </header>
 
     <nav class="tabs">
@@ -113,15 +283,15 @@
 
         <form id="formPlacementTest" class="d-none mt-2">
           <div id="questionsList"></div>
-          <button type="submit" class="btn btn-success mt-2 w-100">Nộp bài kết quả</button>
+          <button type="submit" class="btn btn-success mt-2 w-100" style="padding: 12px; font-size: 1.1rem; border-radius: 8px;">Nộp bài kết quả</button>
         </form>
 
         <div id="resultContainer" class="d-none mt-2">
-          <div class="alert alert-info">
-            <h3 style="margin-top: 0;">Kết quả của bạn</h3>
-            <p>Số câu đúng: <strong id="resScore" class="text-success"></strong> / <span id="resTotal"></span></p>
-            <p>Trình độ đánh giá: <strong id="resLevel" style="font-size: 1.2rem; color: var(--primary);"></strong></p>
-            <button id="btnRetake" class="btn btn-outline mt-1">Làm lại bài test</button>
+          <div class="alert alert-info" style="border-radius: 12px; padding: 25px; text-align: center;">
+            <h3 style="margin-top: 0; color: var(--primary-color);">Kết quả của bạn</h3>
+            <p style="font-size: 1.1rem;">Số câu đúng: <strong id="resScore" class="text-success" style="font-size: 1.5rem;"></strong> / <span id="resTotal"></span></p>
+            <p style="font-size: 1.1rem;">Trình độ đánh giá: <strong id="resLevel" style="font-size: 1.5rem; color: var(--danger-color); background: #fff3cd; padding: 5px 15px; border-radius: 20px;"></strong></p>
+            <button id="btnRetake" class="btn btn-outline mt-2" style="border-radius: 8px;">Làm lại bài test</button>
           </div>
         </div>
       </div>
@@ -131,28 +301,28 @@
       <div class="card">
         <h2 class="card-title">Học Từ Vựng qua Flashcard</h2>
         
-        <div class="d-flex gap-2 mb-2 align-center wrap">
+        <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label>Chủ đề:</label>
-            <select id="vocabTopic" class="form-control">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #475569;">Chủ đề:</label>
+            <select id="vocabTopic" class="form-control" style="border-radius: 8px; padding: 8px 15px; height: 42px; border: 1px solid #cbd5e1; outline: none;">
               <option value="travel">Du lịch (Travel)</option>
               <option value="business">Kinh doanh (Business)</option>
               <option value="daily">Đời sống (Daily Life)</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label>Cấp độ:</label>
-            <select id="vocabLevel" class="form-control">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #475569;">Cấp độ:</label>
+            <select id="vocabLevel" class="form-control" style="border-radius: 8px; padding: 8px 15px; height: 42px; border: 1px solid #cbd5e1; outline: none;">
               <option value="A1">A1</option>
               <option value="A2">A2</option>
               <option value="B1">B1</option>
             </select>
           </div>
-          <button id="btnLoadVocab" class="btn btn-primary mt-1">Lấy từ vựng</button>
+          <button id="btnLoadVocab" class="btn btn-primary" style="border-radius: 8px; padding: 0 20px; height: 42px; font-weight: 500;">Lấy từ vựng</button>
         </div>
 
         <div id="vocabList" class="vocab-grid">
-           <div class="text-muted text-center w-100">Hãy chọn chủ đề và bấm "Lấy từ vựng" để bắt đầu lật thẻ!</div>
+           <div class="text-muted text-center w-100" style="padding: 40px; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">Hãy chọn chủ đề và bấm "Lấy từ vựng" để bắt đầu lật thẻ!</div>
         </div>
       </div>
     </section>
@@ -161,20 +331,22 @@
       <div class="card">
         <h2 class="card-title">Học Ngữ Pháp</h2>
         
-        <div class="d-flex gap-2 mb-2 align-center">
+        <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label>Cấp độ:</label>
-            <select id="grammarLevel" class="form-control">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #475569;">Cấp độ:</label>
+            <select id="grammarLevel" class="form-control" style="border-radius: 8px; padding: 8px 15px; height: 42px; border: 1px solid #cbd5e1; outline: none;">
               <option value="A1">A1</option>
               <option value="A2">A2</option>
               <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
             </select>
           </div>
-          <button id="btnLoadGrammar" class="btn btn-primary mt-1">Lấy bài học</button>
+          <button id="btnLoadGrammar" class="btn btn-primary" style="border-radius: 8px; padding: 0 20px; height: 42px; font-weight: 500;">Lấy bài học</button>
         </div>
 
         <div id="grammarList" style="display: flex; flex-direction: column; gap: 1rem;">
-           <div class="text-muted text-center">Hãy chọn cấp độ để bắt đầu bài học ngữ pháp.</div>
+           <div class="text-muted text-center" style="padding: 40px; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">Hãy chọn cấp độ để bắt đầu bài học ngữ pháp.</div>
         </div>
       </div>
     </section>
