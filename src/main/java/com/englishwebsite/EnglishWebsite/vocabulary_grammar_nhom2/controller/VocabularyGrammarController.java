@@ -1,10 +1,6 @@
 package com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.controller;
 
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.GrammarLessonDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.PlacementSubmissionDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.PlacementTestResultDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.QuestionDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.VocabularyItemDto;
+import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.*;
 import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.service.VocabularyGrammarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +16,9 @@ public class VocabularyGrammarController {
     @Autowired
     private VocabularyGrammarService service;
 
-    // =========================================
+    // ======================================================
     // CHỨC NĂNG 4: KIỂM TRA ĐẦU VÀO (PLACEMENT TEST)
-    // =========================================
+    // ======================================================
     
     @GetMapping("/placement-test")
     public ResponseEntity<List<QuestionDto>> getPlacementTest() {
@@ -35,9 +31,9 @@ public class VocabularyGrammarController {
         return ResponseEntity.ok(result);
     }
 
-    // =========================================
+    // ======================================================
     // CHỨC NĂNG 5: HỌC TỪ VỰNG (VOCABULARY)
-    // =========================================
+    // ======================================================
     
     @GetMapping("/vocabulary")
     public ResponseEntity<List<VocabularyItemDto>> getVocabulary(
@@ -46,20 +42,26 @@ public class VocabularyGrammarController {
         return ResponseEntity.ok(service.getVocabulary(topic, level));
     }
 
-    // MỚI: API đánh dấu từ vựng đã học
     @PostMapping("/vocabulary/mark-learned/{id}")
     public ResponseEntity<String> markLearned(@PathVariable String id) {
         service.markAsLearned(id);
         return ResponseEntity.ok("Cập nhật trạng thái thành công!");
     }
 
-    // =========================================
+    // ======================================================
     // CHỨC NĂNG 6: HỌC NGỮ PHÁP (GRAMMAR)
-    // =========================================
+    // ======================================================
 
+    // API lấy lý thuyết bài học
     @GetMapping("/grammar")
     public ResponseEntity<List<GrammarLessonDto>> getGrammar(
             @RequestParam(defaultValue = "A1") String level) {
         return ResponseEntity.ok(service.getGrammarLessons(level));
+    }
+
+    // API MỚI: Lấy danh sách bài tập thực hành theo level
+    @GetMapping("/grammar/exercises")
+    public ResponseEntity<List<GrammarExerciseDto>> getExercises(@RequestParam String level) {
+        return ResponseEntity.ok(service.getExercisesByLevel(level));
     }
 }

@@ -1,10 +1,6 @@
 package com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.service;
 
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.GrammarLessonDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.PlacementSubmissionDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.PlacementTestResultDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.QuestionDto;
-import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.VocabularyItemDto;
+import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,8 +14,6 @@ import java.util.stream.Collectors;
 public class VocabularyGrammarService {
 
     private final Map<String, String> correctAnswers = new HashMap<>();
-    
-    // Danh sách dùng chung để lưu trạng thái học tập (không bị reset khi lấy lại từ vựng)
     private final List<VocabularyItemDto> allVocab = new ArrayList<>();
 
     public VocabularyGrammarService() {
@@ -38,20 +32,16 @@ public class VocabularyGrammarService {
         // TRAVEL (Du lịch)
         allVocab.add(new VocabularyItemDto("v1", "Map", "Bản đồ", "I need a map to find the way.", "/mæp/", "travel", "A1", false));
         allVocab.add(new VocabularyItemDto("v2", "Ticket", "Vé", "Don't forget your flight ticket.", "/ˈtɪk.ɪt/", "travel", "A1", false));
-        
         allVocab.add(new VocabularyItemDto("v3", "Destination", "Điểm đến", "Paris is a popular destination.", "/ˌdes.tɪˈneɪ.ʃən/", "travel", "A2", false));
         allVocab.add(new VocabularyItemDto("v4", "Passport", "Hộ chiếu", "You must carry your passport.", "/ˈpɑːs.pɔːt/", "travel", "A2", false));
-        
         allVocab.add(new VocabularyItemDto("v5", "Itinerary", "Lịch trình", "We have a busy itinerary for the trip.", "/aɪˈtɪn.ər.ər.i/", "travel", "B1", false));
         allVocab.add(new VocabularyItemDto("v6", "Baggage allowance", "Hành lý ký gửi", "What is the baggage allowance?", "/ˈbæɡ.ɪdʒ əˌlaʊ.əns/", "travel", "B1", false));
 
         // BUSINESS (Kinh doanh)
         allVocab.add(new VocabularyItemDto("v7", "Office", "Văn phòng", "I work in an office.", "/ˈɒf.ɪs/", "business", "A1", false));
         allVocab.add(new VocabularyItemDto("v8", "Boss", "Sếp", "My boss is very professional.", "/bɒs/", "business", "A1", false));
-        
         allVocab.add(new VocabularyItemDto("v9", "Meeting", "Cuộc họp", "We have a meeting at 10 AM.", "/ˈmiː.tɪŋ/", "business", "A2", false));
         allVocab.add(new VocabularyItemDto("v10", "Company", "Công ty", "The company is expanding.", "/ˈkʌm.pə.ni/", "business", "A2", false));
-        
         allVocab.add(new VocabularyItemDto("v11", "Negotiate", "Đàm phán", "We need to negotiate the contract.", "/nəˈɡəʊ.ʃi.eɪt/", "business", "B1", false));
         allVocab.add(new VocabularyItemDto("v12", "Quarterly", "Hàng quý", "The quarterly report is ready.", "/ˈkwɔː.təl.i/", "business", "B1", false));
     }
@@ -72,22 +62,13 @@ public class VocabularyGrammarService {
     public PlacementTestResultDto gradePlacementTest(PlacementSubmissionDto submission) {
         int score = 0;
         int total = 5; 
-        
         if (submission.getAnswers() != null) {
             for (Map.Entry<String, String> entry : submission.getAnswers().entrySet()) {
                 String correct = correctAnswers.get(entry.getKey());
-                if (correct != null && correct.equals(entry.getValue())) {
-                    score++;
-                }
+                if (correct != null && correct.equals(entry.getValue())) score++;
             }
         }
-
-        // Logic xếp loại dựa trên số câu đúng
-        String level;
-        if (score >= 4) level = "B1 (Intermediate)";
-        else if (score >= 2) level = "A2 (Pre-Elementary)";
-        else level = "A1 (Beginner)";
-
+        String level = (score >= 4) ? "B1 (Intermediate)" : (score >= 2) ? "A2 (Pre-Elementary)" : "A1 (Beginner)";
         return new PlacementTestResultDto(score, total, level);
     }
 
@@ -95,7 +76,6 @@ public class VocabularyGrammarService {
     // CHỨC NĂNG 5: HỌC TỪ VỰNG (Persistence Logic)
     // ======================================================
     public List<VocabularyItemDto> getVocabulary(String topic, String level) {
-        // Lọc từ danh sách allVocab thay vì tạo mới để giữ trạng thái đã học
         return allVocab.stream()
                 .filter(v -> v.getCategory().equalsIgnoreCase(topic) && v.getLevel().equalsIgnoreCase(level))
                 .collect(Collectors.toList());
@@ -104,8 +84,7 @@ public class VocabularyGrammarService {
     public boolean markAsLearned(String id) {
         for (VocabularyItemDto item : allVocab) {
             if (item.getId().equals(id)) {
-                item.setLearned(true); // Cập nhật trạng thái trực tiếp trong list tổng
-                System.out.println("Đã đánh dấu thuộc từ: " + item.getWord());
+                item.setLearned(true);
                 return true;
             }
         }
@@ -113,7 +92,7 @@ public class VocabularyGrammarService {
     }
 
     // ======================================================
-    // CHỨC NĂNG 6: HỌC NGỮ PHÁP
+    // CHỨC NĂNG 6: HỌC NGỮ PHÁP & BÀI TẬP (MỚI)
     // ======================================================
     public List<GrammarLessonDto> getGrammarLessons(String level) {
         List<GrammarLessonDto> list = new ArrayList<>();
@@ -125,5 +104,19 @@ public class VocabularyGrammarService {
             list.add(new GrammarLessonDto("g3", "Present Perfect (Hiện tại hoàn thành)", "Hành động xảy ra trong quá khứ kéo dài đến hiện tại.", "I have learned Java for 3 years."));
         }
         return list;
+    }
+
+    // Lấy danh sách bài tập dựa trên level
+    public List<GrammarExerciseDto> getExercisesByLevel(String level) {
+        List<GrammarExerciseDto> exercises = new ArrayList<>();
+        if ("A1".equalsIgnoreCase(level)) {
+            exercises.add(new GrammarExerciseDto("e1", "I (be) ___ a 4th-year student.", "am", "A1"));
+            exercises.add(new GrammarExerciseDto("e2", "Ritchi (work) ___ on an IT project.", "works", "A1"));
+        } else if ("A2".equalsIgnoreCase(level)) {
+            exercises.add(new GrammarExerciseDto("e3", "We (complete) ___ the Spring Boot assignment last night.", "completed", "A2"));
+        } else if ("B1".equalsIgnoreCase(level)) {
+            exercises.add(new GrammarExerciseDto("e4", "I (live) ___ in this city since 2020.", "have lived", "B1"));
+        }
+        return exercises;
     }
 }

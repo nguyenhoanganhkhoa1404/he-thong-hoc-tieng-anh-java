@@ -17,7 +17,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // ==========================================
-// 3. CHỨC NĂNG 4: PLACEMENT TEST (Nâng cấp Progress)
+// 3. CHỨC NĂNG 4: PLACEMENT TEST
 // ==========================================
 const btnStartTest = document.getElementById('btnStartTest');
 const formPlacementTest = document.getElementById('formPlacementTest');
@@ -93,7 +93,7 @@ document.getElementById('btnRetake')?.addEventListener('click', () => {
 });
 
 // ==========================================
-// 4. CHỨC NĂNG 5: HỌC TỪ VỰNG (Nâng cấp Flashcards & Audio)
+// 4. CHỨC NĂNG 5: HỌC TỪ VỰNG (Flashcards & Audio)
 // ==========================================
 const btnLoadVocab = document.getElementById('btnLoadVocab');
 const vocabList = document.getElementById('vocabList');
@@ -110,7 +110,6 @@ btnLoadVocab?.addEventListener('click', () => {
                 return;
             }
 
-            // Đổ dữ liệu vào Grid Flashcard thay vì Table
             vocabList.innerHTML = data.map(item => `
                 <div class="flashcard-container" onclick="this.querySelector('.flashcard').classList.toggle('flipped')">
                     <div class="flashcard">
@@ -137,15 +136,12 @@ btnLoadVocab?.addEventListener('click', () => {
         });
 });
 
-// Hàm phát âm sử dụng Web Speech API
 window.speakWord = function(word) {
     if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US'; // Tiếng Anh giọng Mỹ
-        utterance.rate = 0.8;     // Tốc độ hơi chậm một chút để dễ nghe
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
         window.speechSynthesis.speak(utterance);
-    } else {
-        alert("Trình duyệt của bạn không hỗ trợ phát âm.");
     }
 };
 
@@ -155,14 +151,12 @@ window.markAsLearned = function(id, btnElement) {
             if (res.ok) {
                 const td = document.getElementById(`status-${id}`);
                 td.innerHTML = '<span style="color: green; font-weight: bold;">✅ Đã thuộc</span>';
-                console.log(`Cập nhật thành công từ vựng: ${id}`);
             }
-        })
-        .catch(err => alert('Lỗi hệ thống: ' + err.message));
+        });
 };
 
 // ==========================================
-// 5. CHỨC NĂNG 6: HỌC NGỮ PHÁP (Giao diện Card)
+// 5. CHỨC NĂNG 6: HỌC NGỮ PHÁP (Kèm Bài tập Quiz)
 // ==========================================
 const btnLoadGrammar = document.getElementById('btnLoadGrammar');
 const grammarList = document.getElementById('grammarList');
@@ -183,11 +177,57 @@ btnLoadGrammar?.addEventListener('click', () => {
                         <span style="background: var(--primary); color: white; border-radius: 50%; width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-right: 10px;">?</span>
                         ${item.title}
                     </h3>
-                    <div style="background: #fdfdfd; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <div style="background: #fdfdfd; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); margin-bottom: 15px;">
                         <p><strong>💡 Cách dùng:</strong> ${item.usage}</p>
                         <p style="margin-bottom: 0;"><strong>📝 Ví dụ:</strong> <span style="color: #2c3e50; font-style: italic;">"${item.example}"</span></p>
                     </div>
+                    
+                    <button class="btn btn-outline btn-sm" onclick="loadExercises('${level}', this)">✍️ Làm bài tập thực hành</button>
+                    <div class="exercise-area mt-1 d-none"></div>
                 </div>
             `).join('');
         });
 });
+
+// Hàm lấy và render bài tập
+window.loadExercises = function(level, btn) {
+    const area = btn.nextElementSibling;
+    if (!area.classList.contains('d-none')) {
+        area.classList.add('d-none');
+        return;
+    }
+
+    fetch(`${API_BASE}/grammar/exercises?level=${level}`)
+        .then(res => res.json())
+        .then(exercises => {
+            area.classList.remove('d-none');
+            area.innerHTML = `
+                <div style="background: #fffbe6; padding: 15px; border-radius: 8px; border: 1px dashed #ffe58f; margin-top: 10px;">
+                    <h4 style="margin-bottom: 10px; color: #856404;">Điền vào chỗ trống:</h4>
+                    ${exercises.map(ex => `
+                        <div class="mb-1" style="border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                            <p>${ex.question}</p>
+                            <input type="text" id="ex-${ex.id}" class="form-control" style="width: 180px; display: inline-block; margin-right: 10px;" placeholder="Đáp án...">
+                            <button class="btn btn-primary btn-sm" onclick="checkExercise('${ex.id}', '${ex.correctAnswer}')">Check</button>
+                            <div id="feedback-${ex.id}" class="mt-0-5" style="font-size: 0.9rem;"></div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        });
+};
+
+// Hàm check đáp án bài tập
+window.checkExercise = function(id, correct) {
+    const input = document.getElementById(`ex-${id}`);
+    const feedback = document.getElementById(`feedback-${id}`);
+    const userVal = input.value.trim().toLowerCase();
+    
+    if (userVal === correct.toLowerCase()) {
+        feedback.innerHTML = '<span style="color: #28a745; font-weight: bold;">✅ Quá chuẩn!</span>';
+        input.style.borderColor = "#28a745";
+    } else {
+        feedback.innerHTML = `<span style="color: #dc3545;">❌ Sai rồi. Đáp án đúng là: <strong>${correct}</strong></span>`;
+        input.style.borderColor = "#dc3545";
+    }
+};
