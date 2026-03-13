@@ -33,7 +33,6 @@ btnStartTest?.addEventListener('click', () => {
             formPlacementTest.classList.remove('d-none');
             resultContainer.classList.add('d-none');
             
-            // Hiển thị thanh tiến trình ở đầu danh sách câu hỏi
             questionsList.innerHTML = `
                 <div class="progress-container" style="margin-bottom: 20px; padding: 10px; background: #f0f7ff; border-radius: 8px;">
                     <div id="testProgress" style="font-weight: bold; color: var(--primary);">
@@ -55,14 +54,13 @@ btnStartTest?.addEventListener('click', () => {
         .catch(err => console.error('Lỗi tải câu hỏi:', err));
 });
 
-// Hàm cập nhật trạng thái tiến độ làm bài
 window.updateTestProgress = function(total) {
     const selectedCount = document.querySelectorAll('#questionsList input[type="radio"]:checked').length;
     const progressText = document.getElementById('testProgress');
     if (progressText) {
         progressText.textContent = `Tiến độ: ${selectedCount}/${total} câu đã chọn`;
         if (selectedCount === total) {
-            progressText.style.color = "#28a745"; // Đổi sang màu xanh lá khi xong
+            progressText.style.color = "#28a745";
             progressText.textContent += " - Đã sẵn sàng nộp bài! ✨";
         }
     }
@@ -95,7 +93,7 @@ document.getElementById('btnRetake')?.addEventListener('click', () => {
 });
 
 // ==========================================
-// 4. CHỨC NĂNG 5: HỌC TỪ VỰNG
+// 4. CHỨC NĂNG 5: HỌC TỪ VỰNG (Nâng cấp Flashcards & Audio)
 // ==========================================
 const btnLoadVocab = document.getElementById('btnLoadVocab');
 const vocabList = document.getElementById('vocabList');
@@ -108,36 +106,55 @@ btnLoadVocab?.addEventListener('click', () => {
         .then(res => res.json())
         .then(data => {
             if (data.length === 0) {
-                vocabList.innerHTML = '<tr><td colspan="5" class="text-center">Hiện chưa có từ vựng cho mục này</td></tr>';
+                vocabList.innerHTML = '<div class="text-center w-100">Hiện chưa có từ vựng cho mục này</div>';
                 return;
             }
-            vocabList.innerHTML = data.map(item => {
-                const statusIcon = item.learned ? '✅' : '❌';
-                const actionBtn = item.learned 
-                    ? '<span class="text-muted" style="font-size: 0.8rem;">Đã thuộc</span>' 
-                    : `<button class="btn btn-primary btn-sm" onclick="markAsLearned('${item.id}', this)" style="padding: 2px 10px;">Học xong</button>`;
-                
-                return `
-                    <tr style="transition: all 0.3s;">
-                        <td><strong>${item.word}</strong></td>
-                        <td style="color: var(--primary); font-family: monospace;">${item.pronunciation}</td>
-                        <td>${item.meaning}</td>
-                        <td style="font-style: italic; color: #666;">"${item.example}"</td>
-                        <td id="status-${item.id}" class="text-center">
-                            ${statusIcon} ${actionBtn}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+
+            // Đổ dữ liệu vào Grid Flashcard thay vì Table
+            vocabList.innerHTML = data.map(item => `
+                <div class="flashcard-container" onclick="this.querySelector('.flashcard').classList.toggle('flipped')">
+                    <div class="flashcard">
+                        <div class="flashcard-front">
+                            <span class="badge-level">${item.level}</span>
+                            <h2>${item.word}</h2>
+                            <p class="pronunciation">${item.pronunciation}</p>
+                            <button class="btn-speak" title="Phát âm" onclick="event.stopPropagation(); speakWord('${item.word}')">🔊</button>
+                            <small style="margin-top: 15px; color: #999;">Bấm để xem nghĩa</small>
+                        </div>
+                        <div class="flashcard-back">
+                            <h3 style="color: var(--primary); margin-bottom: 10px;">${item.meaning}</h3>
+                            <p style="font-style: italic; margin-bottom: 20px; color: #555;">"${item.example}"</p>
+                            <div id="status-${item.id}">
+                                ${item.learned ? 
+                                    '<span style="color: green; font-weight: bold;">✅ Đã thuộc</span>' : 
+                                    `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); markAsLearned('${item.id}', this)">Học xong</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         });
 });
+
+// Hàm phát âm sử dụng Web Speech API
+window.speakWord = function(word) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US'; // Tiếng Anh giọng Mỹ
+        utterance.rate = 0.8;     // Tốc độ hơi chậm một chút để dễ nghe
+        window.speechSynthesis.speak(utterance);
+    } else {
+        alert("Trình duyệt của bạn không hỗ trợ phát âm.");
+    }
+};
 
 window.markAsLearned = function(id, btnElement) {
     fetch(`${API_BASE}/vocabulary/mark-learned/${id}`, { method: 'POST' })
         .then(res => {
             if (res.ok) {
                 const td = document.getElementById(`status-${id}`);
-                td.innerHTML = '✅ <span class="text-muted" style="font-size: 0.8rem;">Đã thuộc</span>';
+                td.innerHTML = '<span style="color: green; font-weight: bold;">✅ Đã thuộc</span>';
                 console.log(`Cập nhật thành công từ vựng: ${id}`);
             }
         })
@@ -145,7 +162,7 @@ window.markAsLearned = function(id, btnElement) {
 };
 
 // ==========================================
-// 5. CHỨC NĂNG 6: HỌC NGỮ PHÁP (Nâng cấp giao diện Card)
+// 5. CHỨC NĂNG 6: HỌC NGỮ PHÁP (Giao diện Card)
 // ==========================================
 const btnLoadGrammar = document.getElementById('btnLoadGrammar');
 const grammarList = document.getElementById('grammarList');
