@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Học Từ vựng & Ngữ pháp (Nhóm 2)</title>
+  <link rel="stylesheet" href="../styles.css"> 
+  <style>
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .question-block { margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ddd; }
+    .option-label { display: block; margin: 0.5rem 0 0 1rem; cursor: pointer; }
+    .grammar-lesson { padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary); }
+
+    /* =========================================
+       CSS CHO FLASHCARD 3D (MỚI CẬP NHẬT)
+       ========================================= */
+    .vocab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .flashcard-container {
+      perspective: 1000px;
+      height: 250px;
+      cursor: pointer;
+    }
+
+    .flashcard {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: 15px;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front, .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      border-radius: 15px;
+      background: white;
+      border: 2px solid var(--primary);
+      text-align: center;
+    }
+
+    .flashcard-back {
+      background: #f0f7ff;
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front h2 { color: var(--primary); margin: 10px 0; }
+    .pronunciation { color: #666; font-family: monospace; font-size: 1.1rem; }
+    
+    .btn-speak {
+      background: #eee;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+    .btn-speak:hover { background: #ddd; }
+
+    .badge-level {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="panel-header" style="margin-bottom: 1.5rem;">
+      <h1>Học Từ vựng & Ngữ pháp (Nhóm 2)</h1>
+    </header>
+
+    <nav class="tabs">
+      <button type="button" class="tab active" data-tab="placement">Kiểm tra đầu vào</button>
+      <button type="button" class="tab" data-tab="vocabulary">Từ vựng</button>
+      <button type="button" class="tab" data-tab="grammar">Ngữ pháp</button>
+    </nav>
+
+    <section id="section-placement" class="section-content active">
+      <div class="card">
+        <h2 class="card-title">Bài Kiểm Tra Trình Độ (Placement Test)</h2>
+        <div id="testContainer">
+          <p>Hãy làm bài kiểm tra ngắn này để hệ thống đánh giá trình độ tiếng Anh hiện tại của bạn nhé!</p>
+          <button id="btnStartTest" class="btn btn-primary mt-1">Bắt đầu làm bài</button>
+        </div>
+
+        <form id="formPlacementTest" class="d-none mt-2">
+          <div id="questionsList"></div>
+          <button type="submit" class="btn btn-success mt-2 w-100">Nộp bài kết quả</button>
+        </form>
+
+        <div id="resultContainer" class="d-none mt-2">
+          <div class="alert alert-info">
+            <h3 style="margin-top: 0;">Kết quả của bạn</h3>
+            <p>Số câu đúng: <strong id="resScore" class="text-success"></strong> / <span id="resTotal"></span></p>
+            <p>Trình độ đánh giá: <strong id="resLevel" style="font-size: 1.2rem; color: var(--primary);"></strong></p>
+            <button id="btnRetake" class="btn btn-outline mt-1">Làm lại bài test</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-vocabulary" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Học Từ Vựng qua Flashcard</h2>
+        
+        <div class="d-flex gap-2 mb-2 align-center wrap">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Chủ đề:</label>
+            <select id="vocabTopic" class="form-control">
+              <option value="travel">Du lịch (Travel)</option>
+              <option value="business">Kinh doanh (Business)</option>
+              <option value="daily">Đời sống (Daily Life)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Cấp độ:</label>
+            <select id="vocabLevel" class="form-control">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+            </select>
+          </div>
+          <button id="btnLoadVocab" class="btn btn-primary mt-1">Lấy từ vựng</button>
+        </div>
+
+        <div id="vocabList" class="vocab-grid">
+           <div class="text-muted text-center w-100">Hãy chọn chủ đề và bấm "Lấy từ vựng" để bắt đầu lật thẻ!</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-grammar" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Học Ngữ Pháp</h2>
+        
+        <div class="d-flex gap-2 mb-2 align-center">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Cấp độ:</label>
+            <select id="grammarLevel" class="form-control">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+            </select>
+          </div>
+          <button id="btnLoadGrammar" class="btn btn-primary mt-1">Lấy bài học</button>
+        </div>
+
+        <div id="grammarList" style="display: flex; flex-direction: column; gap: 1rem;">
+           <div class="text-muted text-center">Hãy chọn cấp độ để bắt đầu bài học ngữ pháp.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="vocab-grammar.js"></script>
+</body>
+</html>
