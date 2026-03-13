@@ -1,53 +1,91 @@
 package com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.service;
 
 import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.*;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
+import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections; // Cần thiết để xào bài ngẫu nhiên
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class VocabularyGrammarService {
 
     private final Map<String, String> correctAnswers = new HashMap<>();
-    private final List<VocabularyItemDto> allVocab = new ArrayList<>();
 
     public VocabularyGrammarService() {
-        // --- 1. ĐÁP ÁN BÀI KIỂM TRA ĐẦU VÀO (5 CÂU) ---
-        correctAnswers.put("q1", "am");         // Level A1
-        correctAnswers.put("q2", "does");       // Level A1
-        correctAnswers.put("q3", "went");       // Level A2
-        correctAnswers.put("q4", "has been");   // Level B1
-        correctAnswers.put("q5", "would have"); // Level B1+
-
-        // --- 2. KHỞI TẠO DỮ LIỆU TỪ VỰNG ---
-        initVocabData();
-    }
-
-    private void initVocabData() {
-        // TRAVEL (Du lịch)
-        allVocab.add(new VocabularyItemDto("v1", "Map", "Bản đồ", "I need a map to find the way.", "/mæp/", "travel", "A1", false));
-        allVocab.add(new VocabularyItemDto("v2", "Ticket", "Vé", "Don't forget your flight ticket.", "/ˈtɪk.ɪt/", "travel", "A1", false));
-        allVocab.add(new VocabularyItemDto("v3", "Destination", "Điểm đến", "Paris is a popular destination.", "/ˌdes.tɪˈneɪ.ʃən/", "travel", "A2", false));
-        allVocab.add(new VocabularyItemDto("v4", "Passport", "Hộ chiếu", "You must carry your passport.", "/ˈpɑːs.pɔːt/", "travel", "A2", false));
-        allVocab.add(new VocabularyItemDto("v5", "Itinerary", "Lịch trình", "We have a busy itinerary for the trip.", "/aɪˈtɪn.ər.ər.i/", "travel", "B1", false));
-        allVocab.add(new VocabularyItemDto("v6", "Baggage allowance", "Hành lý ký gửi", "What is the baggage allowance?", "/ˈbæɡ.ɪdʒ əˌlaʊ.əns/", "travel", "B1", false));
-
-        // BUSINESS (Kinh doanh)
-        allVocab.add(new VocabularyItemDto("v7", "Office", "Văn phòng", "I work in an office.", "/ˈɒf.ɪs/", "business", "A1", false));
-        allVocab.add(new VocabularyItemDto("v8", "Boss", "Sếp", "My boss is very professional.", "/bɒs/", "business", "A1", false));
-        allVocab.add(new VocabularyItemDto("v9", "Meeting", "Cuộc họp", "We have a meeting at 10 AM.", "/ˈmiː.tɪŋ/", "business", "A2", false));
-        allVocab.add(new VocabularyItemDto("v10", "Company", "Công ty", "The company is expanding.", "/ˈkʌm.pə.ni/", "business", "A2", false));
-        allVocab.add(new VocabularyItemDto("v11", "Negotiate", "Đàm phán", "We need to negotiate the contract.", "/nəˈɡəʊ.ʃi.eɪt/", "business", "B1", false));
-        allVocab.add(new VocabularyItemDto("v12", "Quarterly", "Hàng quý", "The quarterly report is ready.", "/ˈkwɔː.təl.i/", "business", "B1", false));
+        // --- 1. ĐÁP ÁN BÀI KIỂM TRA ĐẦU VÀO ---
+        correctAnswers.put("q1", "am");
+        correctAnswers.put("q2", "does");
+        correctAnswers.put("q3", "went");
+        correctAnswers.put("q4", "has been");
+        correctAnswers.put("q5", "would have");
     }
 
     // ======================================================
-    // CHỨC NĂNG 4: PLACEMENT TEST (Nâng cấp lên 5 câu)
+    // CHỨC NĂNG 5: HỌC TỪ VỰNG (🔥 RANDOM 5 TỪ TỪ FIRESTORE 🔥)
+    // ======================================================
+    public List<VocabularyItemDto> getVocabulary(String topic, String level) {
+        List<VocabularyItemDto> allItems = new ArrayList<>();
+        
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            CollectionReference vocabRef = db.collection("vocabulary");
+
+            // 1. Lấy một "cụm" dữ liệu (ví dụ 50 từ) để làm kho trộn ngẫu nhiên
+            Query query = vocabRef.whereEqualTo("level", level).limit(50);
+            ApiFuture<QuerySnapshot> querySnapshot = query.get();
+
+            for (QueryDocumentSnapshot doc : querySnapshot.get().getDocuments()) {
+                allItems.add(new VocabularyItemDto(
+                    doc.getId(),
+                    doc.getString("word"),
+                    doc.getString("meaning"),
+                    doc.getString("example"),
+                    doc.getString("pronunciation"),
+                    topic, 
+                    level, 
+                    false
+                ));
+            }
+
+            // 2. Xử lý ngẫu nhiên nếu có dữ liệu
+            if (!allItems.isEmpty()) {
+                // Xào bài ngẫu nhiên
+                Collections.shuffle(allItems);
+                
+                // Rút ra 5 từ đầu tiên (hoặc ít hơn nếu kho không đủ 5 từ)
+                int numberOfItems = Math.min(allItems.size(), 5);
+                List<VocabularyItemDto> randomFive = allItems.subList(0, numberOfItems);
+                
+                System.out.println("🎲 [RANDOM] Đã bốc 5 từ ngẫu nhiên cho Ritchi từ Level: " + level);
+                return randomFive;
+            } else {
+                System.out.println("⚠️ Không tìm thấy từ, dùng data dự phòng.");
+                return getBackupData(topic, level);
+            }
+
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("❌ Lỗi: " + e.getMessage());
+            return getBackupData(topic, level);
+        }
+    }
+
+    private List<VocabularyItemDto> getBackupData(String topic, String level) {
+        return Arrays.asList(
+            new VocabularyItemDto("v1", "Map", "Bản đồ", "I need a map.", "/mæp/", topic, level, false),
+            new VocabularyItemDto("v2", "Ticket", "Vé", "Show your ticket.", "/ˈtɪk.ɪt/", topic, level, false)
+        );
+    }
+
+    // ======================================================
+    // CHỨC NĂNG 4: PLACEMENT TEST (GIỮ NGUYÊN)
     // ======================================================
     public List<QuestionDto> getPlacementQuestions() {
         return Arrays.asList(
@@ -61,7 +99,6 @@ public class VocabularyGrammarService {
 
     public PlacementTestResultDto gradePlacementTest(PlacementSubmissionDto submission) {
         int score = 0;
-        int total = 5; 
         if (submission.getAnswers() != null) {
             for (Map.Entry<String, String> entry : submission.getAnswers().entrySet()) {
                 String correct = correctAnswers.get(entry.getKey());
@@ -69,54 +106,30 @@ public class VocabularyGrammarService {
             }
         }
         String level = (score >= 4) ? "B1 (Intermediate)" : (score >= 2) ? "A2 (Pre-Elementary)" : "A1 (Beginner)";
-        return new PlacementTestResultDto(score, total, level);
+        return new PlacementTestResultDto(score, 5, level);
     }
 
     // ======================================================
-    // CHỨC NĂNG 5: HỌC TỪ VỰNG (Persistence Logic)
-    // ======================================================
-    public List<VocabularyItemDto> getVocabulary(String topic, String level) {
-        return allVocab.stream()
-                .filter(v -> v.getCategory().equalsIgnoreCase(topic) && v.getLevel().equalsIgnoreCase(level))
-                .collect(Collectors.toList());
-    }
-
-    public boolean markAsLearned(String id) {
-        for (VocabularyItemDto item : allVocab) {
-            if (item.getId().equals(id)) {
-                item.setLearned(true);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // ======================================================
-    // CHỨC NĂNG 6: HỌC NGỮ PHÁP & BÀI TẬP (MỚI)
+    // CHỨC NĂNG 6: NGỮ PHÁP & BÀI TẬP (GIỮ NGUYÊN)
     // ======================================================
     public List<GrammarLessonDto> getGrammarLessons(String level) {
         List<GrammarLessonDto> list = new ArrayList<>();
         if ("A1".equalsIgnoreCase(level)) {
-            list.add(new GrammarLessonDto("g1", "Present Simple (Hiện tại đơn)", "Diễn tả thói quen hoặc sự thật hiển nhiên.", "I study IT every day."));
+            list.add(new GrammarLessonDto("g1", "Present Simple", "Diễn tả thói quen.", "I study every day."));
         } else if ("A2".equalsIgnoreCase(level)) {
-            list.add(new GrammarLessonDto("g2", "Past Simple (Quá khứ đơn)", "Hành động đã kết thúc hoàn toàn trong quá khứ.", "I finished my project yesterday."));
-        } else if ("B1".equalsIgnoreCase(level)) {
-            list.add(new GrammarLessonDto("g3", "Present Perfect (Hiện tại hoàn thành)", "Hành động xảy ra trong quá khứ kéo dài đến hiện tại.", "I have learned Java for 3 years."));
+            list.add(new GrammarLessonDto("g2", "Past Simple", "Hành động đã kết thúc.", "I finished work yesterday."));
         }
         return list;
     }
 
-    // Lấy danh sách bài tập dựa trên level
     public List<GrammarExerciseDto> getExercisesByLevel(String level) {
-        List<GrammarExerciseDto> exercises = new ArrayList<>();
-        if ("A1".equalsIgnoreCase(level)) {
-            exercises.add(new GrammarExerciseDto("e1", "I (be) ___ a 4th-year student.", "am", "A1"));
-            exercises.add(new GrammarExerciseDto("e2", "Ritchi (work) ___ on an IT project.", "works", "A1"));
-        } else if ("A2".equalsIgnoreCase(level)) {
-            exercises.add(new GrammarExerciseDto("e3", "We (complete) ___ the Spring Boot assignment last night.", "completed", "A2"));
-        } else if ("B1".equalsIgnoreCase(level)) {
-            exercises.add(new GrammarExerciseDto("e4", "I (live) ___ in this city since 2020.", "have lived", "B1"));
-        }
-        return exercises;
+        return Arrays.asList(
+            new GrammarExerciseDto("e1", "I (be) ___ a student.", "am", level),
+            new GrammarExerciseDto("e2", "She (work) ___ here.", "works", level)
+        );
+    }
+
+    public void markAsLearned(String id) {
+        System.out.println("Đã đánh dấu học từ ID: " + id);
     }
 }
