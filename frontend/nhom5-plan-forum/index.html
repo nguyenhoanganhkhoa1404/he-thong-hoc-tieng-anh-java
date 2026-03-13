@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievements, Plan & Forum – Nhóm 5</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .panel-header h1 { margin: 0; font-size: 1.5rem; }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    .badge-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(100px,1fr)); gap: 1rem; }
+    .badge { text-align: center; padding: 0.5rem; border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); }
+    .badge.locked { opacity: 0.3; }
+    .task-item { display: flex; align-items: center; gap: 0.5rem; }
+    .post { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; margin-bottom: 0.75rem; }
+    .comment { margin-left: 1rem; padding-left: 0.5rem; border-left: 2px solid var(--border); margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="panel-header">
+      <h1>Achievements / Daily Plan / Forum (Nhóm 5)</h1>
+    </header>
+
+    <nav class="tabs">
+      <button type="button" class="tab active" data-tab="achievements">Huy hiệu</button>
+      <button type="button" class="tab" data-tab="plan">Kế hoạch ngày</button>
+      <button type="button" class="tab" data-tab="forum">Diễn đàn</button>
+    </nav>
+
+    <section id="section-achievements" class="section-content active">
+      <div class="card">
+        <h2 class="card-title">Huy hiệu / Thành tựu</h2>
+        <div class="form-group d-flex gap-1">
+          <input type="text" class="form-control" id="achUserId" value="user-demo" placeholder="User ID">
+          <button type="button" class="btn btn-primary" id="btnLoadAchievements">Tải huy hiệu</button>
+        </div>
+        <h3>Đã mở khóa</h3>
+        <div id="badgesUnlocked" class="badge-grid"></div>
+        <h3>Có thể mở khóa</h3>
+        <div id="badgesLocked" class="badge-grid"></div>
+      </div>
+    </section>
+
+    <section id="section-plan" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Kế hoạch học hàng ngày</h2>
+        <div class="form-group d-flex gap-1">
+          <input type="text" class="form-control" id="planUserId" value="user-demo" placeholder="User ID">
+          <input type="date" class="form-control" id="planDate" value="">
+          <button type="button" class="btn btn-primary" id="btnLoadPlan">Tải kế hoạch</button>
+          <button type="button" class="btn btn-secondary" id="btnSavePlan">Lưu/Khiển</button>
+        </div>
+        <div id="planTasks"></div>
+        <div id="planEmpty" class="empty-state">Chưa có kế hoạch nào.</div>
+      </div>
+    </section>
+
+    <section id="section-forum" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Diễn đàn</h2>
+        <div class="form-group">
+          <button type="button" class="btn btn-primary" id="btnLoadPosts">Xem tất cả bài</button>
+        </div>
+        <div id="postList"></div>
+        <div class="form-group mt-2">
+          <h3>Tạo bài mới</h3>
+          <input type="text" class="form-control" id="newPostTitle" placeholder="Tiêu đề">
+          <textarea class="form-control" id="newPostContent" rows="3" placeholder="Nội dung"></textarea>
+          <button type="button" class="btn btn-success mt-1" id="btnCreatePost">Đăng bài</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="plan-forum.js"></script>
+</body>
+</html>
