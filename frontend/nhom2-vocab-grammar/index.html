@@ -10,6 +10,7 @@
     .section-content.active { display: block; }
     .question-block { margin-bottom: 1.5rem; padding: 1rem; background: var(--bg); border-radius: var(--radius); }
     .option-label { display: block; margin: 0.5rem 0 0 1rem; cursor: pointer; }
+    .grammar-lesson { padding: 1rem; background: var(--bg); border-radius: var(--radius); border-left: 4px solid var(--primary); }
   </style>
 </head>
 <body>
@@ -20,8 +21,8 @@
 
     <nav class="tabs">
       <button type="button" class="tab active" data-tab="placement">Kiểm tra đầu vào</button>
-      <button type="button" class="tab" data-tab="vocabulary">Từ vựng (Sắp ra mắt)</button>
-      <button type="button" class="tab" data-tab="grammar">Ngữ pháp (Sắp ra mắt)</button>
+      <button type="button" class="tab" data-tab="vocabulary">Từ vựng</button>
+      <button type="button" class="tab" data-tab="grammar">Ngữ pháp</button>
     </nav>
 
     <section id="section-placement" class="section-content active">
@@ -46,6 +47,75 @@
             <p>Trình độ đánh giá: <strong id="resLevel" style="font-size: 1.2rem; color: var(--primary);"></strong></p>
             <button id="btnRetake" class="btn btn-outline mt-1">Làm lại</button>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-vocabulary" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Học Từ Vựng</h2>
+        
+        <div class="d-flex gap-2 mb-2 align-center">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Chủ đề:</label>
+            <select id="vocabTopic" class="form-control">
+              <option value="travel">Du lịch (Travel)</option>
+              <option value="business">Kinh doanh (Business)</option>
+              <option value="daily">Đời sống (Daily Life)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Cấp độ:</label>
+            <select id="vocabLevel" class="form-control">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+            </select>
+          </div>
+          <button id="btnLoadVocab" class="btn btn-primary mt-1">Lấy từ vựng</button>
+        </div>
+
+        <div id="vocabAlert" class="alert d-none"></div>
+        
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Từ vựng</th>
+                <th>Phiên âm</th>
+                <th>Nghĩa</th>
+                <th>Ví dụ</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="vocabList">
+              <tr><td colspan="5" class="text-muted text-center">Hãy chọn chủ đề và bấm "Lấy từ vựng"</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-grammar" class="section-content">
+      <div class="card">
+        <h2 class="card-title">Học Ngữ Pháp</h2>
+        
+        <div class="d-flex gap-2 mb-2 align-center">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Cấp độ:</label>
+            <select id="grammarLevel" class="form-control">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+            </select>
+          </div>
+          <button id="btnLoadGrammar" class="btn btn-primary mt-1">Lấy bài học</button>
+        </div>
+
+        <div id="grammarAlert" class="alert d-none"></div>
+        
+        <div id="grammarList" style="display: flex; flex-direction: column; gap: 1rem;">
+           <div class="text-muted text-center">Hãy chọn cấp độ và bấm "Lấy bài học"</div>
         </div>
       </div>
     </section>
