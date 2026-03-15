@@ -7,10 +7,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import jakarta.annotation.PostConstruct;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,21 +19,24 @@ public class FirebaseConfig {
     @Value("${firebase.project-id}")
     private String projectId;
 
+    /**
+     * Supports Spring resource prefixes (classpath:, file:, etc.).
+     */
     @Value("${firebase.credentials.path}")
-    private String credentialsPath;
+    private Resource credentialsResource;
 
     @PostConstruct
     public void initialize() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {
-                InputStream serviceAccount = new ClassPathResource("firebase-service-account.json").getInputStream();
-                
-                FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .setProjectId(projectId)
-                        .build();
+                try (InputStream serviceAccount = credentialsResource.getInputStream()) {
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .setProjectId(projectId)
+                            .build();
 
-                FirebaseApp.initializeApp(options);
+                    FirebaseApp.initializeApp(options);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to initialize Firebase", e);
