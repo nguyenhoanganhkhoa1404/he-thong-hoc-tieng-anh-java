@@ -1,8 +1,10 @@
 package com.englishwebsite.EnglishWebsite.api_v1.vocab;
 
-import com.englishwebsite.EnglishWebsite.security.FirebasePrincipal;
+import com.englishwebsite.EnglishWebsite.auth_nhom1.service.UserService;
+import com.englishwebsite.EnglishWebsite.model.User;
 import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.dto.VocabularyItemDto;
 import com.englishwebsite.EnglishWebsite.vocabulary_grammar_nhom2.service.VocabularyGrammarService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,9 @@ import java.util.Optional;
 public class VocabController {
 
     private final VocabularyGrammarService service;
+    
+    @Autowired
+    private UserService userService;
 
     public VocabController(VocabularyGrammarService service) {
         this.service = service;
@@ -58,7 +63,10 @@ public class VocabController {
     }
 
     private String uid(Authentication auth) {
-        if (auth != null && auth.getPrincipal() instanceof FirebasePrincipal p) return p.uid();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            User user = userService.getUserByEmail(auth.getName());
+            if (user != null) return user.getUid();
+        }
         return "user-demo";
     }
 }

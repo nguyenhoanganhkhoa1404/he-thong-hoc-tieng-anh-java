@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 public class User {
     @Id
     @Column(length = 128)
-    private String uid; // Firebase UID
+    private String uid;
+
+    @Column(nullable = false)
+    private String password;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -57,6 +60,14 @@ public class User {
     }
 
     // Getters and Setters
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getUid() {
         return uid;
     }
