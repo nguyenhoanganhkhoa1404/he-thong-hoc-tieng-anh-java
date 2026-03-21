@@ -1,0 +1,23 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.englishwebsite:EnglishWebsite >------------------
+[INFO] Building EnglishWebsite 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ EnglishWebsite ---
+[INFO] Deleting C:\File Coding\EnglishWebsite\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ EnglishWebsite ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ EnglishWebsite ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 75 source files with javac [forked debug parameters release 21] to target\classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.833 s
+[INFO] Finished at: 2026-03-21T16:21:51+07:00
+[INFO] ------------------------------------------------------------------------

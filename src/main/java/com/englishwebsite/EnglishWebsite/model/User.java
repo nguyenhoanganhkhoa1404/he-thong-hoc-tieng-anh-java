@@ -1,29 +1,47 @@
 package com.englishwebsite.EnglishWebsite.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
  * Model đại diện cho người dùng trong hệ thống
  * Hỗ trợ 2 vai trò: LEARNER (học viên) và TEACHER (giáo viên)
  */
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
+    @Column(length = 128)
     private String uid; // Firebase UID
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String displayName;
+
+    @Column(length = 20)
     private String role; // LEARNER hoặc TEACHER
+
     private String phoneNumber;
+
+    @Column(length = 512)
     private String photoUrl;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
     private boolean emailVerified;
     
     // Thông tin bổ sung cho học viên
+    @Column(length = 10)
     private String level; // A1, A2, B1, B2, C1, C2
+
     private Integer placementTestScore;
     
     // Thông tin bổ sung cho giáo viên
     private String teacherId;
     private String specialization;
+    private boolean active;
 
     // Constructors
     public User() {
@@ -141,6 +159,14 @@ public class User {
 
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     // Helper methods

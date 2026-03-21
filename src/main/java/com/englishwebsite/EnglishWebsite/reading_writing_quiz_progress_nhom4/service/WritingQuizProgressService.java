@@ -1,11 +1,12 @@
 package com.englishwebsite.EnglishWebsite.reading_writing_quiz_progress_nhom4.service;
 
 import com.englishwebsite.EnglishWebsite.reading_writing_quiz_progress_nhom4.dto.*;
+import com.englishwebsite.EnglishWebsite.model.*;
+import com.englishwebsite.EnglishWebsite.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -15,26 +16,34 @@ import java.util.stream.Collectors;
 @Service
 public class WritingQuizProgressService {
 
-    private final Map<String, WritingExerciseDto> writings = new HashMap<>();
-    private final Map<String, List<QuizQuestionDto>> questionsByLesson = new HashMap<>();
-    private final Map<String, List<QuizResultResponse>> quizResultsByUser = new HashMap<>();
-    private final AtomicLong writingIdGen = new AtomicLong(1);
-    private final AtomicLong questionIdGen = new AtomicLong(1);
+    private final WritingExerciseRepository writingRepo;
+    private final QuizQuestionRepository questionRepo;
+    private final QuizResultRepository resultRepo;
+
+    public WritingQuizProgressService(WritingExerciseRepository writingRepo,
+                                     QuizQuestionRepository questionRepo,
+                                     QuizResultRepository resultRepo) {
+        this.writingRepo = writingRepo;
+        this.questionRepo = questionRepo;
+        this.resultRepo = resultRepo;
+    }
 
     public WritingExerciseDto submitWriting(WritingSubmitRequest request) {
         String userId = request.getUserId() != null ? request.getUserId() : "user-demo";
-        String id = "W-" + writingIdGen.getAndIncrement();
-        WritingExerciseDto dto = new WritingExerciseDto();
-        dto.setId(id);
-        dto.setUserId(userId);
-        dto.setLessonId(request.getLessonId());
-        dto.setPrompt(request.getPrompt());
-        dto.setContent(request.getContent());
-        dto.setCreatedAt(LocalDateTime.now());
-        dto.setFeedback(generateSimpleFeedback(request.getContent()));
-        dto.setScore(estimateScore(request.getContent()));
-        writings.put(id, dto);
-        return dto;
+        String id = "W-" + UUID.randomUUID().toString().substring(0, 8);
+        
+        WritingExercise entity = new WritingExercise();
+        entity.setId(id);
+        entity.setUserId(userId);
+        entity.setLessonId(request.getLessonId());
+        entity.setPrompt(request.getPrompt());
+        entity.setContent(request.getContent());
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setFeedback(generateSimpleFeedback(request.getContent()));
+        entity.setScore(estimateScore(request.getContent()));
+        
+        writingRepo.save(entity);
+        return convertToDto(entity);
     }
 
     private String generateSimpleFeedback(String content) {
@@ -58,30 +67,35 @@ public class WritingQuizProgressService {
     }
 
     public List<WritingExerciseDto> getWritingsByUser(String userId) {
-        return writings.values().stream()
-                .filter(w -> userId != null && userId.equals(w.getUserId()))
+        return writingRepo.findByUserId(userId).stream()
+                .map(this::convertToDto)
                 .sorted(Comparator.comparing(WritingExerciseDto::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
     public Optional<WritingExerciseDto> getWritingById(String id) {
-        return Optional.ofNullable(writings.get(id));
+        return writingRepo.findById(id).map(this::convertToDto);
     }
 
     public List<QuizQuestionDto> getQuestionsByLesson(String lessonId) {
-        List<QuizQuestionDto> list = questionsByLesson.get(lessonId);
-        if (list != null) return new ArrayList<>(list);
-        return createDemoQuestions(lessonId);
+        List<QuizQuestion> entities = questionRepo.findByLessonId(lessonId);
+        if (entities.isEmpty()) {
+            List<QuizQuestionDto> demos = createDemoQuestions(lessonId);
+            // In a real migration, we'd save these to the database if needed
+            return demos;
+        }
+        return entities.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     private List<QuizQuestionDto> createDemoQuestions(String lessonId) {
         List<QuizQuestionDto> list = new ArrayList<>();
+        int count = 1;
         for (String[] row : new String[][]{
                 {"She _____ to school every day.", "goes", "go", "goes", "going", "went"},
                 {"Past tense of 'buy'?", "bought", "buyed", "bought", "buys", "buying"}
         }) {
             QuizQuestionDto q = new QuizQuestionDto();
-            q.setId("Q-" + questionIdGen.getAndIncrement());
+            q.setId("Q-" + lessonId + "-" + (count++));
             q.setLessonId(lessonId);
             q.setType("MULTIPLE_CHOICE");
             q.setQuestionText(row[0]);
@@ -91,15 +105,14 @@ public class WritingQuizProgressService {
             list.add(q);
         }
         QuizQuestionDto q3 = new QuizQuestionDto();
-        q3.setId("Q-" + questionIdGen.getAndIncrement());
+        q3.setId("Q-" + lessonId + "-" + count);
         q3.setLessonId(lessonId);
         q3.setType("FILL_BLANK");
         q3.setQuestionText("I _____ (to be) a student. Fill: am / is / are");
         q3.setCorrectAnswers(Collections.singletonList("am"));
-        q3.setOrder(3);
+        q3.setOrder(list.size() + 1);
         list.add(q3);
-        questionsByLesson.put(lessonId, list);
-        return new ArrayList<>(list);
+        return list;
     }
 
     public QuizResultResponse submitQuizResult(QuizResultRequest request) {
@@ -116,37 +129,95 @@ public class WritingQuizProgressService {
                     && q.getCorrectAnswers().stream().anyMatch(c -> c != null && c.trim().equalsIgnoreCase(userAnswer.trim())))
                 score++;
         }
-        QuizResultResponse resp = new QuizResultResponse();
-        resp.setUserId(userId);
-        resp.setLessonId(request.getLessonId());
-        resp.setScore(score);
-        resp.setTotalQuestions(questions.size());
-        resp.setPassed(questions.isEmpty() || (double) score / questions.size() >= 0.6);
-        resp.setTimeSpentSeconds(request.getTimeSpentSeconds());
-        quizResultsByUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(resp);
-        return resp;
+        
+        QuizResult entity = new QuizResult();
+        entity.setUserId(userId);
+        entity.setLessonId(request.getLessonId());
+        entity.setScore(score);
+        entity.setTotalQuestions(questions.size());
+        entity.setPassed(questions.isEmpty() || (double) score / questions.size() >= 0.6);
+        entity.setTimeSpentSeconds((int) request.getTimeSpentSeconds());
+        entity.setCreatedAt(LocalDateTime.now());
+        
+        resultRepo.save(entity);
+        return convertToResponse(entity);
     }
 
     public ProgressOverviewDto getProgressOverview(String userId) {
         String uid = userId != null ? userId : "user-demo";
         ProgressOverviewDto overview = new ProgressOverviewDto();
         overview.setUserId(uid);
-        List<WritingExerciseDto> userWritings = getWritingsByUser(uid);
+        
+        List<WritingExercise> userWritings = writingRepo.findByUserId(uid);
         int writingCount = userWritings.size();
-        double writingAvg = userWritings.stream().filter(w -> w.getScore() != null).mapToInt(WritingExerciseDto::getScore).average().orElse(0);
-        List<QuizResultResponse> userQuizResults = quizResultsByUser.getOrDefault(uid, Collections.emptyList());
+        double writingAvg = userWritings.stream().filter(w -> w.getScore() != null).mapToInt(WritingExercise::getScore).average().orElse(0);
+        
+        List<QuizResult> userQuizResults = resultRepo.findByUserId(uid);
         int quizCount = userQuizResults.size();
-        int totalQuestions = userQuizResults.stream().mapToInt(QuizResultResponse::getTotalQuestions).sum();
-        int totalScore = userQuizResults.stream().mapToInt(QuizResultResponse::getScore).sum();
+        int totalQuestions = userQuizResults.stream().mapToInt(QuizResult::getTotalQuestions).sum();
+        int totalScore = userQuizResults.stream().mapToInt(QuizResult::getScore).sum();
         double quizAvg = totalQuestions > 0 ? totalScore * 10.0 / totalQuestions : 0;
+        
         overview.setTotalLessonsCompleted(writingCount + quizCount);
         if (writingCount + quizCount > 0)
             overview.setAverageScore(Math.round((writingAvg * writingCount + quizAvg * quizCount) / (writingCount + quizCount) * 10) / 10.0);
         else overview.setAverageScore(0);
+        
         overview.setCurrentLevel(overview.getAverageScore() >= 8 ? "B1" : overview.getAverageScore() >= 5 ? "A2" : "A1");
-        overview.getBySkill().put("writing", new SkillProgressDto()); overview.getBySkill().get("writing").setCompletedLessons(writingCount); overview.getBySkill().get("writing").setAverageScore(writingAvg); overview.getBySkill().get("writing").setLevel(overview.getCurrentLevel());
-        overview.getBySkill().put("reading", new SkillProgressDto()); overview.getBySkill().get("reading").setCompletedLessons(quizCount); overview.getBySkill().get("reading").setAverageScore(quizAvg); overview.getBySkill().get("reading").setLevel(overview.getCurrentLevel());
-        overview.getBySkill().put("listening", new SkillProgressDto()); overview.getBySkill().put("speaking", new SkillProgressDto());
+        overview.getBySkill().put("writing", new SkillProgressDto()); 
+        overview.getBySkill().get("writing").setCompletedLessons(writingCount); 
+        overview.getBySkill().get("writing").setAverageScore(writingAvg); 
+        overview.getBySkill().get("writing").setLevel(overview.getCurrentLevel());
+        
+        overview.getBySkill().put("reading", new SkillProgressDto()); 
+        overview.getBySkill().get("reading").setCompletedLessons(quizCount); 
+        overview.getBySkill().get("reading").setAverageScore(quizAvg); 
+        overview.getBySkill().get("reading").setLevel(overview.getCurrentLevel());
+        
+        overview.getBySkill().put("listening", new SkillProgressDto()); 
+        overview.getBySkill().put("speaking", new SkillProgressDto());
         return overview;
+    }
+
+    private WritingExerciseDto convertToDto(WritingExercise entity) {
+        WritingExerciseDto dto = new WritingExerciseDto();
+        dto.setId(entity.getId());
+        dto.setUserId(entity.getUserId());
+        dto.setLessonId(entity.getLessonId());
+        dto.setPrompt(entity.getPrompt());
+        dto.setContent(entity.getContent());
+        dto.setFeedback(entity.getFeedback());
+        dto.setScore(entity.getScore());
+        dto.setCreatedAt(entity.getCreatedAt());
+        return dto;
+    }
+
+    private QuizQuestionDto convertToDto(QuizQuestion entity) {
+        QuizQuestionDto dto = new QuizQuestionDto();
+        dto.setId(entity.getId());
+        dto.setLessonId(entity.getLessonId());
+        dto.setType(entity.getType());
+        dto.setQuestionText(entity.getQuestionText());
+        dto.setCorrectAnswer(entity.getCorrectAnswer());
+        dto.setOrder(entity.getOrder());
+        
+        if (entity.getOptionsJson() != null) {
+            dto.setOptions(Arrays.asList(entity.getOptionsJson().split(",")));
+        }
+        if (entity.getCorrectAnswersJson() != null) {
+            dto.setCorrectAnswers(Arrays.asList(entity.getCorrectAnswersJson().split(",")));
+        }
+        return dto;
+    }
+
+    private QuizResultResponse convertToResponse(QuizResult entity) {
+        QuizResultResponse resp = new QuizResultResponse();
+        resp.setUserId(entity.getUserId());
+        resp.setLessonId(entity.getLessonId());
+        resp.setScore(entity.getScore());
+        resp.setTotalQuestions(entity.getTotalQuestions());
+        resp.setPassed(entity.isPassed());
+        resp.setTimeSpentSeconds(entity.getTimeSpentSeconds());
+        return resp;
     }
 }
