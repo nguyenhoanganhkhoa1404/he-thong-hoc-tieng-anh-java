@@ -23,6 +23,15 @@ public class Course {
     
     private boolean published;
     
+    @Column(length = 50)
+    private String teacherId;
+    
+    private Double price;
+    
+    private Double rating;
+    
+    private Integer totalStudents;
+    
     @Column(columnDefinition = "TEXT")
     private String moduleIdsString; // Stored as comma-separated IDs
 
@@ -51,4 +60,13 @@ public class Course {
             this.moduleIdsString = String.join(",", moduleIds);
         }
     }
+
+    public String getTeacherId() { return teacherId; }
+    public void setTeacherId(String teacherId) { this.teacherId = teacherId; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+    public Integer getTotalStudents() { return totalStudents; }
+    public void setTotalStudents(Integer totalStudents) { this.totalStudents = totalStudents; }
 }

@@ -14,6 +14,7 @@ public class LeaderboardEntry {
     @Column(name = "total_points")
     private int totalPoints;
 
+    @Column(name = "ranking")
     private int rank;
 
     public LeaderboardEntry() {}

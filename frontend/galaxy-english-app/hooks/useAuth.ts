@@ -10,15 +10,26 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
+  const checkAuth = useCallback(() => {
     const stored = localStorage.getItem("galaxy_token");
     if (stored) {
       setToken(stored);
       verifyToken(stored);
     } else {
+      setUser(null);
+      setToken(null);
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    checkAuth();
+    
+    // Listen to local storage changes to sync across tabs
+    const handleStorage = () => checkAuth();
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [checkAuth]);
 
   const verifyToken = async (t: string) => {
     try {
@@ -55,8 +66,9 @@ export function useAuth() {
     return data;
   }, []);
 
-  const register = useCallback(async (req: RegisterRequest): Promise<AuthResponse> => {
-    const res = await fetch(`${API_BASE}/register`, {
+  const register = useCallback(async (req: RegisterRequest & { role?: string; teacherId?: string; specialization?: string }): Promise<AuthResponse> => {
+    const endpoint = req.role === "TEACHER" ? `${API_BASE}/teacher/register` : `${API_BASE}/register`;
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req),
@@ -70,5 +82,5 @@ export function useAuth() {
     setUser(null);
   }, []);
 
-  return { user, token, loading, login, register, logout, isAuthenticated: !!user };
+  return { user, token, loading, login, register, logout, checkAuth, isAuthenticated: !!user };
 }

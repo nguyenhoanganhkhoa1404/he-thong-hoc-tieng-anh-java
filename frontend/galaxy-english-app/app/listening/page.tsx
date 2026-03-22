@@ -1,14 +1,51 @@
 // app/listening/page.tsx — Nhóm 3: Listening exercises with audio player UI
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mockListening } from "@/data/mockData";
 import Button from "@/components/ui/Button";
 
 export default function ListeningPage() {
-  const [selected, setSelected] = useState<typeof mockListening[0] | null>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<any | null>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [showTranscript, setShowTranscript] = useState(false);
+  
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      if ((window as any).progressTimer) clearInterval((window as any).progressTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/v1/skills/lessons?skill=LISTENING")
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          setLessons(mockListening);
+          return;
+        }
+        const mapped = data.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          level: d.level,
+          duration: 150, // default dummy duration
+          transcript: d.content,
+          questions: [
+            { id: d.id + "q1", question: d.instructions || "What is the main idea?", options: ["Understanding", "Memory", "Focus"], correctAnswer: 0 }
+          ]
+        }));
+        setLessons(mapped);
+      })
+      .catch(() => setLessons(mockListening))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -21,9 +58,11 @@ export default function ListeningPage() {
           <p className="text-slate-400 max-w-xl mx-auto">Luyện kỹ năng nghe với các bài hội thoại thực tế ở mọi cấp độ.</p>
         </div>
 
-        {!selected ? (
+        {loading ? (
+          <div className="text-center text-violet-400 py-12 animate-pulse">Loading listening lab...</div>
+        ) : !selected ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {mockListening.map(ex => (
+            {lessons.map(ex => (
               <div key={ex.id} onClick={() => setSelected(ex)}
                 className="glass border border-white/10 rounded-2xl p-6 card-hover cursor-pointer">
                 <div className="flex items-center gap-4 mb-4">
@@ -82,29 +121,77 @@ export default function ListeningPage() {
               </div>
 
               <div className="flex justify-center gap-4">
-                <button className="text-slate-400 hover:text-white p-2 transition-colors">⏮️</button>
-                <button onClick={() => { setPlaying(!playing); if (!playing) { let p = 0; const t = setInterval(() => { p += 1; setProgress(p); if (p >= 100) clearInterval(t); }, 100); } }}
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-600 to-violet-600 flex items-center justify-center text-xl glow-cyan hover:scale-105 transition-all">
+                <button 
+                  onClick={() => {
+                    if (typeof window === "undefined" || !window.speechSynthesis) return;
+                    
+                    if (playing) {
+                      window.speechSynthesis.pause();
+                      setPlaying(false);
+                      clearInterval((window as any).progressTimer);
+                    } else {
+                      if (window.speechSynthesis.paused && progress > 0 && progress < 100) {
+                        window.speechSynthesis.resume();
+                        setPlaying(true);
+                      } else {
+                        window.speechSynthesis.cancel();
+                        setProgress(0);
+                        const ut = new SpeechSynthesisUtterance(selected.transcript);
+                        ut.lang = "en-US";
+                        ut.rate = 0.85; // slightly slower for learners
+                        
+                        const words = selected.transcript.split(" ").length;
+                        const estSeconds = Math.max(words * (60 / 140), 3); // ~140 wpm
+                        
+                        ut.onstart = () => {
+                          setPlaying(true);
+                          let p = 0;
+                          const interval = 100;
+                          const step = 100 / (estSeconds * 1000 / interval);
+                          (window as any).progressTimer = setInterval(() => {
+                            p += step;
+                            if (p >= 100) { p = 100; clearInterval((window as any).progressTimer); }
+                            setProgress(Math.min(p, 100));
+                          }, interval);
+                        };
+                        
+                        ut.onend = () => {
+                          setPlaying(false);
+                          setProgress(100);
+                          clearInterval((window as any).progressTimer);
+                        };
+                        
+                        window.speechSynthesis.speak(ut);
+                      }
+                    }
+                  }}
+                  className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-600 to-violet-600 flex items-center justify-center text-3xl glow-cyan hover:scale-105 transition-all text-white shadow-xl">
                   {playing ? "⏸" : "▶"}
                 </button>
-                <button className="text-slate-400 hover:text-white p-2 transition-colors">⏭️</button>
               </div>
             </div>
 
-            {/* Transcript */}
-            <div className="glass border border-white/10 rounded-2xl p-5 mb-6">
-              <h3 className="text-sm font-bold text-white mb-3">📄 Transcript</h3>
-              <p className="text-slate-400 text-sm leading-relaxed italic">{selected.transcript}</p>
+            {/* Transcript (Hidden by default) */}
+            <div className="mb-6 flex flex-col items-center">
+              <Button variant="ghost" size="sm" onClick={() => setShowTranscript(!showTranscript)}>
+                {showTranscript ? "🙈 Hide Transcript" : "👀 Show Transcript"}
+              </Button>
+              {showTranscript && (
+                <div className="glass border border-white/10 rounded-2xl p-5 mt-4 w-full">
+                  <h3 className="text-sm font-bold text-white mb-3">📄 Transcript</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed italic">{selected.transcript}</p>
+                </div>
+              )}
             </div>
 
             {/* Questions */}
             <div className="space-y-4">
               <h3 className="text-sm font-bold text-violet-300">❓ Comprehension Questions</h3>
-              {selected.questions.map((q, qi) => (
+              {selected.questions.map((q: any, qi: number) => (
                 <div key={q.id} className="glass border border-white/10 rounded-2xl p-5">
                   <p className="text-white font-semibold text-sm mb-3">{qi + 1}. {q.question}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {q.options.map((opt, oi) => {
+                    {q.options.map((opt: string, oi: number) => {
                       const answered = answers[q.id] !== undefined;
                       const isSelected = answers[q.id] === oi;
                       const isCorrect = oi === q.correctAnswer;

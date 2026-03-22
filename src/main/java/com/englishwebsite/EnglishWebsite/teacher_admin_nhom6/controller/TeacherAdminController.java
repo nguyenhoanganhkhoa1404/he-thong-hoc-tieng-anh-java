@@ -47,9 +47,42 @@ public class TeacherAdminController {
         return ResponseEntity.ok(teachers);
     }
 
+    @GetMapping("/students")
+    public ResponseEntity<List<com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.StudentDto>> listStudents() {
+        return ResponseEntity.ok(teacherAdminService.listStudents());
+    }
+
     @GetMapping("/teachers/{uid}")
     public ResponseEntity<TeacherAccountDto> getTeacher(@PathVariable String uid) {
         return teacherAdminService.getTeacher(uid)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/users/{uid}")
+    public ResponseEntity<com.englishwebsite.EnglishWebsite.model.User> getUserProfile(@PathVariable String uid) {
+        return teacherAdminService.getUserProfile(uid)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/users/{uid}/profile")
+    public ResponseEntity<com.englishwebsite.EnglishWebsite.model.User> updateUserProfile(
+            @PathVariable String uid,
+            @RequestBody com.englishwebsite.EnglishWebsite.model.User updateReq
+    ) {
+        return teacherAdminService.updateUserProfile(uid, updateReq)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/students/{uid}/level")
+    public ResponseEntity<com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.StudentDto> updateStudentLevel(
+            @PathVariable String uid,
+            @RequestParam String level,
+            @RequestParam(required = false, defaultValue="0") Integer score
+    ) {
+        return teacherAdminService.updateStudentLevel(uid, level, score)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -88,6 +121,18 @@ public class TeacherAdminController {
     public ResponseEntity<List<CourseDto>> listCourses() {
         List<CourseDto> courses = teacherAdminService.listCourses();
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/courses/teacher/{teacherId}")
+    public ResponseEntity<List<CourseDto>> listCoursesByTeacher(@PathVariable String teacherId) {
+        List<CourseDto> courses = teacherAdminService.listCoursesByTeacher(teacherId);
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/stats/teacher/{teacherId}")
+    public ResponseEntity<com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherStatsDto> getTeacherStats(@PathVariable String teacherId) {
+        com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherStatsDto stats = teacherAdminService.getTeacherStats(teacherId);
+        return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/courses/{courseId}")

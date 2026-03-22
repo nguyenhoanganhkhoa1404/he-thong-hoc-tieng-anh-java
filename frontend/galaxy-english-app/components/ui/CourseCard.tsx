@@ -31,7 +31,7 @@ export default function CourseCard({ course, compact = false }: CourseCardProps)
   const levelColor = levelColors[course.level] || "text-violet-400 bg-violet-400/10 border-violet-400/30";
 
   return (
-    <Link href={`/courses/${course.id}`}>
+    <Link href={`/courses/detail?id=${course.id}`}>
       <div className="glass border border-white/10 rounded-2xl overflow-hidden card-hover cursor-pointer group h-full flex flex-col">
         {/* Thumbnail */}
         <div className="relative h-40 bg-gradient-to-br from-violet-900/60 to-cyan-900/40 flex items-center justify-center overflow-hidden">
@@ -64,9 +64,9 @@ export default function CourseCard({ course, compact = false }: CourseCardProps)
           )}
           <div className="flex items-center gap-2 mb-3">
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {course.teacher.displayName.charAt(0)}
+              {(course.teacher?.displayName || "U").charAt(0).toUpperCase()}
             </div>
-            <span className="text-xs text-slate-400 truncate">{course.teacher.displayName}</span>
+            <span className="text-xs text-slate-400 truncate">{course.teacher?.displayName || "Unknown"}</span>
           </div>
           <StarRating rating={course.rating} />
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">

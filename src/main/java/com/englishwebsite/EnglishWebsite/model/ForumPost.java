@@ -23,6 +23,9 @@ public class ForumPost {
 
     private String topic;
 
+    @Column(columnDefinition = "integer default 0")
+    private int likes = 0;
+
     public ForumPost() {}
 
     public String getId() { return id; }
@@ -37,4 +40,6 @@ public class ForumPost {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public String getTopic() { return topic; }
     public void setTopic(String topic) { this.topic = topic; }
+    public int getLikes() { return likes; }
+    public void setLikes(int likes) { this.likes = likes; }
 }

@@ -1,6 +1,6 @@
 // app/speaking/page.tsx — Nhóm 3: Speaking exercises with mic UI
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 
 const speakingExercises = [
@@ -10,10 +10,33 @@ const speakingExercises = [
 ];
 
 export default function SpeakingPage() {
-  const [selected, setSelected] = useState<typeof speakingExercises[0] | null>(null);
+  const [exercises, setExercises] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<any | null>(null);
   const [recording, setRecording] = useState(false);
   const [recorded, setRecorded] = useState(false);
   const [waveActive, setWaveActive] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/v1/skills/lessons?skill=SPEAKING")
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          setExercises(speakingExercises);
+          return;
+        }
+        const mapped = data.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          level: d.level,
+          prompt: d.content || "Speak about the topic.",
+          tips: d.instructions ? d.instructions.split("\n").filter((t: string) => t.trim() !== '') : ["Speak clearly", "Use appropriate vocabulary"]
+        }));
+        setExercises(mapped);
+      })
+      .catch(() => setExercises(speakingExercises))
+      .finally(() => setLoading(false));
+  }, []);
 
   const startRecording = () => {
     setRecording(true); setWaveActive(true); setRecorded(false);
@@ -29,9 +52,11 @@ export default function SpeakingPage() {
           <p className="text-slate-400 max-w-xl mx-auto">Luyện phát âm và kỹ năng nói với các chủ đề thực tế hàng ngày.</p>
         </div>
 
-        {!selected ? (
+        {loading ? (
+          <div className="text-center text-pink-400 py-12 animate-pulse">Loading speaking studio...</div>
+        ) : !selected ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {speakingExercises.map(ex => (
+            {exercises.map(ex => (
               <div key={ex.id} onClick={() => setSelected(ex)}
                 className="glass border border-white/10 rounded-2xl p-6 card-hover cursor-pointer text-center">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-600 to-violet-600 flex items-center justify-center text-2xl mx-auto mb-4">🎤</div>
@@ -58,7 +83,7 @@ export default function SpeakingPage() {
               <div className="glass border border-white/10 rounded-2xl p-5 mb-8">
                 <h3 className="text-sm font-bold text-cyan-300 mb-3">💡 Tips</h3>
                 <ul className="space-y-2">
-                  {selected.tips.map((tip, i) => (
+                  {selected.tips.map((tip: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
                       <span className="text-violet-400 mt-0.5">✦</span> {tip}
                     </li>

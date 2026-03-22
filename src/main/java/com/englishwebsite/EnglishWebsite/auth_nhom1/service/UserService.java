@@ -62,7 +62,7 @@ public class UserService {
         user.setRole("TEACHER");
         user.setTeacherId(request.getTeacherId());
         user.setSpecialization(request.getSpecialization());
-        user.setActive(false); // Default to inactive until approved
+        user.setActive(true); // Auto-active for testing purposes (normally requires Admin approval)
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         

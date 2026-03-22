@@ -7,10 +7,12 @@ export interface User {
   displayName: string;
   role: "LEARNER" | "TEACHER" | "ADMIN";
   photoUrl?: string;
+  specialization?: string;
   level?: string; // A1, A2, B1, B2, C1, C2
   xp?: number;
   streak?: number;
   active?: boolean;
+  placementTestScore?: number;
 }
 
 export interface AuthResponse {

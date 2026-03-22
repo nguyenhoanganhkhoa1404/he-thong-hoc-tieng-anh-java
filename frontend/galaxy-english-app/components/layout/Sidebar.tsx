@@ -37,7 +37,7 @@ export default function DashboardSidebar() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  const isTeacher = user?.role === "TEACHER";
+  const isTeacher = user?.role?.toUpperCase() === "TEACHER";
   const links = isTeacher ? teacherLinks : studentLinks;
 
   const handleLogout = () => {
@@ -66,9 +66,15 @@ export default function DashboardSidebar() {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">{user?.displayName || "User"}</p>
-            <p className="text-xs text-violet-400">
-              {user?.level || "A1"} · {user?.xp || 0} XP
-            </p>
+            {!isTeacher ? (
+              <p className="text-xs text-violet-400">
+                {user?.level || "A1"} · {user?.xp || 0} XP
+              </p>
+            ) : (
+              <p className="text-xs text-emerald-400 font-bold tracking-widest uppercase">
+                {user?.specialization || "Teacher"}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -99,9 +105,11 @@ export default function DashboardSidebar() {
 
       {/* Footer */}
       <div className="px-3 py-4 border-t border-white/10 space-y-1">
-        <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-sm transition-colors">
-          🌐 <span>Back to Home</span>
-        </Link>
+        {!isTeacher && (
+          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-sm transition-colors">
+            🌐 <span>Back to Home</span>
+          </Link>
+        )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-900/20 text-sm transition-colors"

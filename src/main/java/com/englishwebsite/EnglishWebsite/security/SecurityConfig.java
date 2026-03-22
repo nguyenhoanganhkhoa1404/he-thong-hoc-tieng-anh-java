@@ -52,13 +52,13 @@ public class SecurityConfig {
                                 "/courses/**", "/vocabulary/**", "/grammar/**",
                                 "/listening/**", "/speaking/**", "/quiz/**", "/writing/**",
                                 "/plan/**", "/forum/**", "/login/**", "/register/**",
-                                "/dashboard/**", "/admin/**", "/404/**",
+                                "/dashboard/**", "/admin/**", "/404/**", "/placement/**", "/profile/**",
                                 // Legacy group routes
                                 "/nhom1-auth/**", "/nhom2-vocab-grammar/**", "/nhom3-listening-speaking/**",
                                 "/nhom4-writing-quiz-progress/**", "/nhom5-plan-forum/**", "/nhom6-teacher-admin/**",
                                 "/english-website-app/**", "/assets/**", "/static/**", "/images/**").permitAll()
 
-                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/health", "/error").permitAll()
                         // New Auth Endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         // Explicitly allow public endpoints for the React app
@@ -71,7 +71,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/forum/**").permitAll()
                         // Allow vocab/grammar endpoints for frontend demo
                         .requestMatchers("/api/v1/vocab/**").permitAll()
+                        .requestMatchers("/api/v1/grammar/**").permitAll()
+                        .requestMatchers("/api/v1/skills/**").permitAll()
+                        .requestMatchers("/api/v1/forum/**").permitAll()
+                        .requestMatchers("/api/writing-quiz-progress/**").permitAll()
                         .requestMatchers("/api/vocab-grammar/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

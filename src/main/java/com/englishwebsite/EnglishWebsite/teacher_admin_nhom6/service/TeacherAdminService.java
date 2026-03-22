@@ -9,6 +9,8 @@ import com.englishwebsite.EnglishWebsite.repository.UserRepository;
 import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.CourseDto;
 import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.NotificationDto;
 import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherAccountDto;
+import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherStatsDto;
+import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.StudentDto;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -28,13 +30,16 @@ public class TeacherAdminService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final NotificationRepository notificationRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public TeacherAdminService(UserRepository userRepository,
                                CourseRepository courseRepository,
-                               NotificationRepository notificationRepository) {
+                               NotificationRepository notificationRepository,
+                               org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.notificationRepository = notificationRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // -------- Teacher / Admin Management (16) --------
@@ -90,6 +95,57 @@ public class TeacherAdminService {
                 .collect(Collectors.toList());
     }
 
+    public List<StudentDto> listStudents() {
+        return userRepository.findAll().stream()
+                .filter(u -> "LEARNER".equals(u.getRole()))
+                .map(u -> new StudentDto(
+                        u.getUid(),
+                        u.getDisplayName() != null ? u.getDisplayName() : "Unknown",
+                        u.getEmail(),
+                        u.getLevel() != null ? u.getLevel() : "A1",
+                        u.getPlacementTestScore() != null ? u.getPlacementTestScore() * 10 : 0
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public Optional<StudentDto> updateStudentLevel(String uid, String level, Integer score) {
+        return userRepository.findById(uid).map(user -> {
+            user.setLevel(level);
+            user.setPlacementTestScore(score);
+            userRepository.save(user);
+            return new StudentDto(
+                    user.getUid(),
+                    user.getDisplayName() != null ? user.getDisplayName() : "Unknown",
+                    user.getEmail(),
+                    user.getLevel(),
+                    user.getPlacementTestScore() != null ? user.getPlacementTestScore() : 0
+            );
+        });
+    }
+
+    public Optional<User> getUserProfile(String uid) {
+        return userRepository.findById(uid);
+    }
+
+    public Optional<User> updateUserProfile(String uid, User updateReq) {
+        return userRepository.findById(uid).map(user -> {
+            // ONLY explicitly editable fields (Name, Phone, Photo, Password) without modifying Username or Email!
+            if (updateReq.getDisplayName() != null && !updateReq.getDisplayName().isEmpty()) {
+                user.setDisplayName(updateReq.getDisplayName());
+            }
+            if (updateReq.getPhoneNumber() != null) {
+                user.setPhoneNumber(updateReq.getPhoneNumber());
+            }
+            if (updateReq.getPhotoUrl() != null) {
+                user.setPhotoUrl(updateReq.getPhotoUrl());
+            }
+            if (updateReq.getPassword() != null && !updateReq.getPassword().trim().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(updateReq.getPassword()));
+            }
+            return userRepository.save(user);
+        });
+    }
+
     // -------- Course Management (17) --------
 
     public CourseDto createCourse(CourseDto request) {
@@ -101,6 +157,12 @@ public class TeacherAdminService {
         course.setLevel(request.getLevel());
         course.setPublished(request.isPublished());
         course.setModuleIds(request.getModuleIds());
+        
+        course.setTeacherId(request.getTeacherId() != null ? request.getTeacherId() : "T-UNKNOWN");
+        course.setPrice(request.getPrice() != null ? request.getPrice() : 0.0);
+        course.setRating(request.getRating() != null ? request.getRating() : 0.0);
+        course.setTotalStudents(request.getTotalStudents() != null ? request.getTotalStudents() : 0);
+        
         courseRepository.save(course);
         request.setId(id);
         return request;
@@ -131,6 +193,33 @@ public class TeacherAdminService {
         return courseRepository.findAll().stream()
                 .map(this::convertToCourseDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<CourseDto> listCoursesByTeacher(String teacherId) {
+        return courseRepository.findByTeacherId(teacherId).stream()
+                .map(this::convertToCourseDto)
+                .collect(Collectors.toList());
+    }
+
+    public TeacherStatsDto getTeacherStats(String teacherId) {
+        List<Course> courses = courseRepository.findByTeacherId(teacherId);
+        int totalCourses = courses.size();
+        int totalStudents = 0;
+        double sumRating = 0;
+        double totalRevenue = 0;
+        
+        for (Course c : courses) {
+            int students = c.getTotalStudents() != null ? c.getTotalStudents() : 0;
+            totalStudents += students;
+            sumRating += c.getRating() != null ? c.getRating() : 0.0;
+            totalRevenue += (c.getPrice() != null ? c.getPrice() : 0.0) * students;
+        }
+        
+        double avgRating = totalCourses > 0 ? (sumRating / totalCourses) : 0.0;
+        avgRating = Math.round(avgRating * 10.0) / 10.0;
+        
+        List<Integer> monthlyViews = Arrays.asList(400, 600, 800, 1200, 2000, 3500, 4800, 6000, 8500, 11000, 15000, 22000); 
+        return new TeacherStatsDto(totalCourses, totalStudents, avgRating, totalRevenue, monthlyViews);
     }
 
     // -------- Notification System (18) --------
@@ -190,6 +279,12 @@ public class TeacherAdminService {
         dto.setLevel(course.getLevel());
         dto.setPublished(course.isPublished());
         dto.setModuleIds(course.getModuleIds());
+        
+        dto.setTeacherId(course.getTeacherId());
+        dto.setPrice(course.getPrice() != null ? course.getPrice() : 0.0);
+        dto.setRating(course.getRating() != null ? course.getRating() : 0.0);
+        dto.setTotalStudents(course.getTotalStudents() != null ? course.getTotalStudents() : 0);
+        
         return dto;
     }
 

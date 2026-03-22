@@ -19,13 +19,19 @@ public class WritingQuizProgressService {
     private final WritingExerciseRepository writingRepo;
     private final QuizQuestionRepository questionRepo;
     private final QuizResultRepository resultRepo;
+    private final EnglishLessonRepository englishLessonRepo;
+    private final EnglishQuestionRepository englishQuestionRepo;
 
     public WritingQuizProgressService(WritingExerciseRepository writingRepo,
                                      QuizQuestionRepository questionRepo,
-                                     QuizResultRepository resultRepo) {
+                                     QuizResultRepository resultRepo,
+                                     EnglishLessonRepository englishLessonRepo,
+                                     EnglishQuestionRepository englishQuestionRepo) {
         this.writingRepo = writingRepo;
         this.questionRepo = questionRepo;
         this.resultRepo = resultRepo;
+        this.englishLessonRepo = englishLessonRepo;
+        this.englishQuestionRepo = englishQuestionRepo;
     }
 
     public WritingExerciseDto submitWriting(WritingSubmitRequest request) {
@@ -77,15 +83,98 @@ public class WritingQuizProgressService {
         return writingRepo.findById(id).map(this::convertToDto);
     }
 
+    public List<QuizQuestionDto> getAllQuestions(Integer limit) {
+        List<QuizQuestion> all = questionRepo.findAll();
+        if (!all.isEmpty()) {
+            List<QuizQuestionDto> result = all.stream().map(this::convertToDto).collect(Collectors.toList());
+            if (limit != null && limit > 0 && limit < result.size()) return result.subList(0, limit);
+            return result;
+        }
+
+        List<QuizQuestionDto> result = new ArrayList<>();
+        int count = 1;
+        
+        // 1. GRAMMAR & TENSE (from EnglishQuestion)
+        List<EnglishQuestion> eqList = englishQuestionRepo.findAll();
+        if (!eqList.isEmpty()) {
+            Collections.shuffle(eqList);
+            int grammarLimit = Math.min(4, eqList.size());
+            int tenseLimit = Math.min(3, Math.max(0, eqList.size() - grammarLimit));
+
+            for (int i = 0; i < grammarLimit + tenseLimit; i++) {
+                EnglishQuestion eq = eqList.get(i);
+                QuizQuestionDto q = new QuizQuestionDto();
+                q.setId("Q-" + (i < grammarLimit ? "GRAMMAR-" : "TENSE-") + eq.getId());
+                q.setLessonId(i < grammarLimit ? "grammar" : "tense");
+                q.setType("MULTIPLE_CHOICE");
+                
+                String qText = "[" + (i < grammarLimit ? "Grammar" : "Tense") + "] " + eq.getContent();
+                if (qText.contains("A.") || qText.contains("B.")) {
+                    qText = qText.split("A\\.")[0].trim();
+                }
+                q.setQuestionText(qText);
+                q.setOptions(Arrays.asList(eq.getOptionA(), eq.getOptionB(), eq.getOptionC(), eq.getOptionD()));
+                
+                String correctAns = eq.getCorrectAnswer() != null ? eq.getCorrectAnswer().toUpperCase() : "A";
+                if (correctAns.equals("A")) q.setCorrectAnswer(eq.getOptionA());
+                else if (correctAns.equals("B")) q.setCorrectAnswer(eq.getOptionB());
+                else if (correctAns.equals("C")) q.setCorrectAnswer(eq.getOptionC());
+                else if (correctAns.equals("D")) q.setCorrectAnswer(eq.getOptionD());
+                else q.setCorrectAnswer(eq.getOptionA());
+                
+                q.setExplanation(eq.getExplanation() != null && !eq.getExplanation().isEmpty() ? 
+                    eq.getExplanation() : 
+                    "Đáp án đúng là " + correctAns + " cấu trúc phù hợp nhất với ngữ cảnh câu.");
+                
+                q.setOrder(count++);
+                result.add(q);
+            }
+        }
+
+        // 2. LISTENING
+        List<EnglishLesson> listeningLessons = englishLessonRepo.findBySkill("LISTENING");
+        if (!listeningLessons.isEmpty()) {
+            Collections.shuffle(listeningLessons);
+            int listeningLimit = Math.min(3, listeningLessons.size());
+            
+            for (int i = 0; i < listeningLimit; i++) {
+                EnglishLesson lesson = listeningLessons.get(i);
+                QuizQuestionDto q = new QuizQuestionDto();
+                q.setId("Q-LISTENING-" + lesson.getId());
+                q.setLessonId("listening");
+                q.setType("MULTIPLE_CHOICE");
+                
+                String qText = "[Listening] Listening to: " + lesson.getTitle() + "\n";
+                if (lesson.getInstructions() != null) qText += lesson.getInstructions() + "\n";
+                qText += "\n(Audio track reference). What is the main subject typically discussed?";
+                
+                q.setOptions(Arrays.asList("A daily conversation regarding the topic", "A formal academic lecture", "A breaking news broadcast", "A fictional narrative"));
+                q.setCorrectAnswer("A daily conversation regarding the topic");
+                q.setExplanation("Đoạn audio tập trung chủ yếu vào các cuộc hội thoại giao tiếp hằng ngày (daily conversation), do đó đáp án phù hợp nhất là A.");
+                
+                q.setQuestionText(qText);
+                q.setOrder(count++);
+                result.add(q);
+            }
+        }
+
+        if (result.isEmpty()) result = createDemoQuestions("general");
+        
+        if (limit != null && limit > 0 && limit < result.size()) {
+            return result.subList(0, limit);
+        }
+        return result;
+    }
+
     public List<QuizQuestionDto> getQuestionsByLesson(String lessonId) {
         List<QuizQuestion> entities = questionRepo.findByLessonId(lessonId);
         if (entities.isEmpty()) {
             List<QuizQuestionDto> demos = createDemoQuestions(lessonId);
-            // In a real migration, we'd save these to the database if needed
             return demos;
         }
         return entities.stream().map(this::convertToDto).collect(Collectors.toList());
     }
+
 
     private List<QuizQuestionDto> createDemoQuestions(String lessonId) {
         List<QuizQuestionDto> list = new ArrayList<>();

@@ -38,6 +38,13 @@ public class WritingQuizProgressController {
         return service.getWritingById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/quiz/questions")
+    public ResponseEntity<List<QuizQuestionDto>> getAllQuizQuestions(
+            @RequestParam(required = false) Integer limit
+    ) {
+        return ResponseEntity.ok(service.getAllQuestions(limit));
+    }
+
     @GetMapping("/quiz/lesson/{lessonId}/questions")
     public ResponseEntity<List<QuizQuestionDto>> getQuizQuestions(@PathVariable String lessonId) {
         return ResponseEntity.ok(service.getQuestionsByLesson(lessonId));

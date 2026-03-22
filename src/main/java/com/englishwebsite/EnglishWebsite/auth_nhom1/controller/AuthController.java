@@ -78,9 +78,17 @@ public class AuthController {
 
             AuthResponse response = new AuthResponse(jwt, user, "Đăng nhập thành công");
             return ResponseEntity.ok(response);
-        } catch (org.springframework.security.core.AuthenticationException e) {
+        } catch (org.springframework.security.authentication.DisabledException e) {
+            AuthResponse response = new AuthResponse();
+            response.setMessage("Tài khoản của bạn đã bị vô hiệu hóa hoặc chưa được cấp quyền.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
             AuthResponse response = new AuthResponse();
             response.setMessage("Sai email hoặc mật khẩu");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            AuthResponse response = new AuthResponse();
+            response.setMessage("Đăng nhập thất bại. Vui lòng thử lại.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }

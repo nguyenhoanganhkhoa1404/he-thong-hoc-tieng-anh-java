@@ -13,6 +13,11 @@ public class CourseDto {
     private String description;
     private String level;              // A1, A2, B1, ...
     private boolean published;        // Đã publish cho learner hay chưa
+    
+    private String teacherId;
+    private Double price;
+    private Double rating;
+    private Integer totalStudents;
 
     // Đơn giản hoá: danh sách id bài học / module
     private List<String> moduleIds;
@@ -51,6 +56,18 @@ public class CourseDto {
     public void setLevel(String level) {
         this.level = level;
     }
+
+    public String getTeacherId() { return teacherId; }
+    public void setTeacherId(String teacherId) { this.teacherId = teacherId; }
+
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+
+    public Integer getTotalStudents() { return totalStudents; }
+    public void setTotalStudents(Integer totalStudents) { this.totalStudents = totalStudents; }
 
     public boolean isPublished() {
         return published;

@@ -14,7 +14,7 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
   const [role, setRole] = useState<"LEARNER" | "TEACHER">("LEARNER");
-  const [form, setForm] = useState({ displayName: "", email: "", password: "" });
+  const [form, setForm] = useState({ displayName: "", email: "", password: "", teacherId: "" });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
@@ -85,6 +85,10 @@ export default function RegisterPage() {
               value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
             <Input label="Password" type="password" placeholder="At least 6 characters" icon="🔒"
               value={form.password} onChange={e => setForm({...form, password: e.target.value})} required minLength={6} />
+            {role === "TEACHER" && (
+              <Input label="Teacher ID" placeholder="TCH-2026-..." icon="🔑"
+                value={form.teacherId} onChange={e => setForm({...form, teacherId: e.target.value})} required />
+            )}
             <div className="pt-2">
               <Button type="submit" variant="neon" size="lg" loading={loading} className="w-full">
                 ✨ Create Free Account

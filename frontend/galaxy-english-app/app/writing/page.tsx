@@ -1,6 +1,6 @@
 // app/writing/page.tsx — Nhóm 4: Writing exercises with editor
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 
 const prompts = [
@@ -10,9 +10,33 @@ const prompts = [
 ];
 
 export default function WritingPage() {
-  const [selected, setSelected] = useState<typeof prompts[0] | null>(null);
+  const [exercises, setExercises] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<any | null>(null);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/v1/skills/lessons?skill=WRITING")
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          setExercises(prompts);
+          return;
+        }
+        const mapped = data.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          type: d.level === "A1" || d.level === "A2" ? "paragraph" : "essay",
+          level: d.level,
+          wordLimit: { min: 100, max: 250 },
+          prompt: d.content || d.instructions || "Write your essay based on the topic."
+        }));
+        setExercises(mapped);
+      })
+      .catch(() => setExercises(prompts))
+      .finally(() => setLoading(false));
+  }, []);
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
 
@@ -89,7 +113,9 @@ export default function WritingPage() {
           <p className="text-slate-400 max-w-xl mx-auto">Luyện kỹ năng viết từ đoạn văn đến bài luận IELTS. Nộp bài và nhận phản hồi từ giáo viên.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {prompts.map(p => (
+          {loading ? (
+            <div className="col-span-3 text-center text-violet-400 py-12 animate-pulse">Loading writing workshop...</div>
+          ) : exercises.map(p => (
             <div key={p.id} onClick={() => setSelected(p)}
               className="glass border border-white/10 rounded-2xl p-6 card-hover cursor-pointer">
               <div className="flex items-start justify-between mb-4">

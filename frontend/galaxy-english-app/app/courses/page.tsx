@@ -1,22 +1,51 @@
 // app/courses/page.tsx — Course list with search and filter
 "use client";
-import { useState } from "react";
-import { mockCourses } from "@/data/mockData";
+import { useState, useEffect } from "react";
 import CourseCard from "@/components/ui/CourseCard";
 import Input from "@/components/ui/Input";
+import type { Course } from "@/types";
 
 const levels = ["All", "A1", "A2", "B1", "B2", "C1", "C2"];
-const categories = ["All", "General English", "Business English", "IELTS", "Grammar"];
 
 export default function CoursesPage() {
   const [search, setSearch] = useState("");
   const [level, setLevel] = useState("All");
-  const [cat, setCat] = useState("All");
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockCourses.filter(c =>
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch("/api/admin/courses");
+        if (res.ok) {
+          const data = await res.json();
+          const mapped: Course[] = data.filter((d: any) => d.published).map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            description: d.description,
+            level: d.level || "A1",
+            price: d.price || 0,
+            rating: d.rating || 0,
+            totalStudents: d.totalStudents || 0,
+            totalLessons: d.moduleIds?.length || 0,
+            category: "General English",
+            teacher: { displayName: (d.teacherId && d.teacherId.startsWith("T-")) ? "Teacher" : (d.teacherId || "Unknown") },
+            createdAt: new Date().toISOString()
+          }));
+          setCourses(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  const filtered = courses.filter(c =>
     (level === "All" || c.level === level) &&
-    (cat === "All" || c.category === cat) &&
-    (c.title.toLowerCase().includes(search.toLowerCase()) || c.description.toLowerCase().includes(search.toLowerCase()))
+    ((c.title || "").toLowerCase().includes(search.toLowerCase()) || (c.description || "").toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -45,13 +74,13 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        <p className="text-slate-400 text-sm mb-5">{filtered.length} courses found</p>
+        <p className="text-slate-400 text-sm mb-5">{filtered.length} courses found {loading && "..."}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filtered.map(course => (
             <CourseCard key={course.id} course={course} />
           ))}
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div className="col-span-full text-center py-16 text-slate-500">
               <div className="text-4xl mb-4">🔍</div>
               <p>No courses found for your search.</p>
