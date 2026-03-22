@@ -186,7 +186,30 @@ Body: {
   "phoneNumber": "0987654321"
 }
 ```
+### API Endpoints (Nhóm 5 - Achievements, Plan & Forum)
 
+#### Achievements / Badges
+```
+GET /api/achievements?userId={uid}              # danh sách huy hiệu đã mở khóa
+GET /api/achievements/available?userId={uid}    # huy hiệu có thể mở khóa
+```
+
+#### Daily Learning Plan
+```
+GET  /api/daily-plan?userId={uid}&date=YYYY-MM-DD   # đọc kế hoạch ngày
+POST /api/daily-plan                                # tạo hoặc cập nhật kế hoạch
+PUT  /api/daily-plan/{planId}/task/{taskId}?completed=true&userId={uid}  # đánh dấu nhiệm vụ
+```
+
+#### Discussion Forum
+```
+GET    /api/forum/posts                # danh sách bài viết
+GET    /api/forum/posts/{id}           # thông tin bài viết kèm bình luận
+POST   /api/forum/posts                # tạo bài mới
+PUT    /api/forum/posts/{id}           # sửa bài
+DELETE /api/forum/posts/{id}           # xoá bài
+POST   /api/forum/posts/{id}/comments  # thêm bình luận
+```
 ## Cấu hình
 
 ### application.properties
