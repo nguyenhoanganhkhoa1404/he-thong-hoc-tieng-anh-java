@@ -467,6 +467,9 @@ Sau khi **tất cả nhóm** đã hoàn thành phần:
 
 thì sẽ thực hiện bước **tích hợp Firebase / Firestore** theo thứ tự:
 
+- **Branch hiện tại**: `feature/firestore-nhom6` đã tạo và đang phát triển từ `release/full-source-code`.
+- **Fallback**: Khi `firebase.enabled` không set hoặc `false`, hệ thống dùng MySQL hiện tại.
+
 1. **Hoàn thiện cấu hình Firebase chung**  
    - File: `config/FirebaseConfig.java` (đảm bảo dùng đúng `firebase-service-account.json`, `firebase.project-id` trong `application.properties`).  
    - Viết helper/service dùng chung để lấy instance Firestore/Storage (nếu cần).

@@ -1,0 +1,10 @@
+Issue Type,Summary,Description,Assignee,Reporter,Priority,Status,Epic Link,Start Date,Due Date,Story Points
+Epic,ELW-1: Triển khai hệ thống học tiếng Anh Full source code,"Epic cho dự án English Learning Website: hoàn thiện từ repo release/full-source-code",,GitHub Copilot,High,To Do,,2026-04-01,2026-04-30,
+Story,ELW-1.1: Chuẩn bị repo + review cấu trúc,"Clone repo, checkout branch, review file structure & README",Nguyễn Hoàng Anh Khoa,GitHub Copilot,Medium,To Do,ELW-1,2026-04-01,2026-04-02,3
+Story,ELW-1.2: Cập nhật tài liệu + Jira task,"Sửa README, tạo JIRA_TASK.md, log progress",GitHub Copilot,GitHub Copilot,Medium,To Do,ELW-1,2026-04-02,2026-04-03,2
+Story,ELW-1.3: Build/test local,"Fix JDK path, chạy mvn package & unit tests",Nguyễn Thành Phú,GitHub Copilot,High,To Do,ELW-1,2026-04-03,2026-04-05,5
+Story,ELW-1.4: API test + bugfix,"Kiểm tra Auth, Vocabulary, Grammar, Listening, Writing, Quiz, Progress",Nguyễn Quốc Vượng,GitHub Copilot,High,To Do,ELW-1,2026-04-06,2026-04-15,8
+Task,ELW-1.3.1: Configure JDK path,"Cập nhật JAVA_HOME, sửa pom.xml nếu cần, chạy maven pass",Nguyễn Thành Phú,GitHub Copilot,High,To Do,ELW-1.3,2026-04-03,2026-04-04,2
+Task,ELW-1.3.2: Xác nhận function auth,"Kiểm thử đăng ký, đăng nhập, profile API",Huỳnh Phúc Xuân Mai,GitHub Copilot,High,To Do,ELW-1.4,2026-04-06,2026-04-08,3
+Task,ELW-1.3.3: Xác nhận vocabulary/grammar,"Test endpoint vocabulary/grammar API",Nguyễn Minh Tiến,GitHub Copilot,High,To Do,ELW-1.4,2026-04-09,2026-04-11,3
+Task,ELW-1.3.4: Xác nhận quiz/progress,"Test endpoint quiz/progress API",Trần Mỹ Tâm,GitHub Copilot,High,To Do,ELW-1.4,2026-04-12,2026-04-15,3

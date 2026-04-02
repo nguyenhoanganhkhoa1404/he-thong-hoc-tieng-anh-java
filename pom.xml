@@ -141,7 +141,7 @@
 				<configuration>
 					<release>${java.version}</release>
 					<fork>true</fork>
-					<executable>C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot\bin\javac.exe</executable>
+					<!-- Use JAVA_HOME configured in environment; avoid hardcoded local JDK path that causes build failures on other machines -->
 				</configuration>
 			</plugin>
 			<plugin>
