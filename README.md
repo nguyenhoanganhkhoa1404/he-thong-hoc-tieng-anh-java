@@ -3,6 +3,9 @@
 ## Tổng quan
 
 Website học tiếng Anh với kiến trúc Front-end + Back-end (RESTful API), sử dụng Firebase làm cơ sở dữ liệu.
+
+> Cập nhật: Đã sửa đổi và xác nhận trên nhánh `release/full-source-code` bởi GitHub Copilot.
+
 ```
 Team Leader: Nguyễn Hoàng Anh Khoa - 2280601527
 Team Members: Nguyễn Thành Phú - 2280602412
