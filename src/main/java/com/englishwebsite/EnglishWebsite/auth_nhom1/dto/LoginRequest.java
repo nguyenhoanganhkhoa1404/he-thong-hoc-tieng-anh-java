@@ -4,15 +4,17 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * DTO cho request đăng nhập
+ * DTO cho request đăng nhập.
+ * Front-end đăng nhập bằng Firebase (email/password), lấy ID Token rồi gửi idToken lên backend.
  */
 public class LoginRequest {
-    @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
     private String email;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
+
+    /** Firebase ID Token sau khi đăng nhập thành công ở client */
+    private String idToken;
 
     public LoginRequest() {
     }
@@ -36,5 +38,13 @@ public class LoginRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getIdToken() {
+        return idToken;
+    }
+
+    public void setIdToken(String idToken) {
+        this.idToken = idToken;
     }
 }

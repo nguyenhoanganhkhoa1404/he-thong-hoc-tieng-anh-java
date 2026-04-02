@@ -45,6 +45,12 @@
 			<artifactId>firebase-admin</artifactId>
 			<version>9.2.0</version>
 		</dependency>
+		<!-- Firestore for user profile (level, etc.) -->
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-firestore</artifactId>
+			<version>3.22.0</version>
+		</dependency>
 		
 		<!-- Validation -->
 		<dependency>
