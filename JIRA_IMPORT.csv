@@ -8,3 +8,24 @@ Task,ELW-1.3.1: Configure JDK path,"Cập nhật JAVA_HOME, sửa pom.xml nếu 
 Task,ELW-1.3.2: Xác nhận function auth,"Kiểm thử đăng ký, đăng nhập, profile API",Huỳnh Phúc Xuân Mai,GitHub Copilot,High,To Do,ELW-1.4,2026-04-06,2026-04-08,3
 Task,ELW-1.3.3: Xác nhận vocabulary/grammar,"Test endpoint vocabulary/grammar API",Nguyễn Minh Tiến,GitHub Copilot,High,To Do,ELW-1.4,2026-04-09,2026-04-11,3
 Task,ELW-1.3.4: Xác nhận quiz/progress,"Test endpoint quiz/progress API",Trần Mỹ Tâm,GitHub Copilot,High,To Do,ELW-1.4,2026-04-12,2026-04-15,3
+Task,ELW-1.4.1: Kiểm thử login page,"Test chức năng login frontend, validation form",Nguyễn Minh Tiến,GitHub Copilot,High,Done,ELW-1.4,2026-04-06,2026-04-07,2
+Task,ELW-1.4.2: Kiểm thử register page,"Test chức năng đăng ký frontend, message lỗi",Huỳnh Phúc Xuân Mai,GitHub Copilot,High,Done,ELW-1.4,2026-04-06,2026-04-07,2
+Task,ELW-1.4.3: Kiểm thử profile page,"Test profile xem/sửa thông tin",Nguyễn Thị Thùy Nhung,GitHub Copilot,Medium,In Progress,ELW-1.4,2026-04-08,2026-04-09,3
+Task,ELW-1.4.4: Kiểm thử dashboard student,"Test student dashboard UI + data",Nguyễn Hoàng Anh Khoa,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-08,2026-04-10,3
+Task,ELW-1.4.5: Kiểm thử dashboard teacher,"Test teacher dashboard UI + data",Trần Mỹ Tâm,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-08,2026-04-10,3
+Task,ELW-1.4.6: Kiểm thử courses page,"Test list courses + detail routing",Nguyễn Minh Tiến,GitHub Copilot,Medium,In Progress,ELW-1.4,2026-04-09,2026-04-11,3
+Task,ELW-1.4.7: Kiểm thử courses detail,"Test course detail page dữ liệu",Huỳnh Phúc Xuân Mai,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-09,2026-04-11,3
+Task,ELW-1.4.8: Kiểm thử forum,"Test forum viết bài, comment, lọc",Nguyễn Thị Thùy Nhung,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-10,2026-04-12,3
+Task,ELW-1.4.9: Kiểm thử games,"Test games page logic + score",Nguyễn Hoàng Anh Khoa,GitHub Copilot,Medium,In Progress,ELW-1.4,2026-04-10,2026-04-12,3
+Task,ELW-1.4.10: Kiểm thử grammar module,"Test grammar bài học + API",Trần Mỹ Tâm,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-11,2026-04-13,3
+Task,ELW-1.4.11: Kiểm thử listening module,"Test listening bài học + player",Nguyễn Minh Tiến,GitHub Copilot,Medium,In Progress,ELW-1.4,2026-04-11,2026-04-13,3
+Task,ELW-1.4.12: Kiểm thử speaking module,"Test speaking chức năng thu âm + playback",Huỳnh Phúc Xuân Mai,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-12,2026-04-14,3
+Task,ELW-1.4.13: Kiểm thử vocabulary module,"Test vocabulary lookup + danh sách",Nguyễn Thị Thùy Nhung,GitHub Copilot,Medium,Done,ELW-1.4,2026-04-12,2026-04-14,3
+Task,ELW-1.4.14: Kiểm thử writing module,"Test writing exercise + submit",Nguyễn Hoàng Anh Khoa,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-13,2026-04-15,3
+Task,ELW-1.4.15: Kiểm thử quiz module,"Test quiz start, question cycling, score",Trần Mỹ Tâm,GitHub Copilot,High,In Progress,ELW-1.4,2026-04-13,2026-04-15,3
+Task,ELW-1.4.16: Kiểm thử placement page,"Test bài kiểm tra placement + kết quả",Nguyễn Minh Tiến,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-13,2026-04-15,3
+Task,ELW-1.4.17: Kiểm thử plan page,"Test plan scheduling + milestone",Huỳnh Phúc Xuân Mai,GitHub Copilot,Medium,To Do,ELW-1.4,2026-04-14,2026-04-16,3
+Task,ELW-1.4.18: Kiểm thử admin page,"Test admin route + user management",Nguyễn Thị Thùy Nhung,GitHub Copilot,High,In Progress,ELW-1.4,2026-04-14,2026-04-16,3
+Task,ELW-1.4.19: Kiểm thử profile component,"Test UI component profile trận etc.",Nguyễn Hoàng Anh Khoa,GitHub Copilot,Medium,Done,ELW-1.4,2026-04-14,2026-04-16,2
+Task,ELW-1.4.20: Kiểm thử deploy static UI,"Kiểm tra giao diện production sau build",Trần Mỹ Tâm,GitHub Copilot,High,Done,ELW-1.4,2026-04-15,2026-04-17,3
+Task,ELW-1.4.21: Kiểm thử API tổng hợp,"Kiểm tra tất cả endpoint chính auth/vocab/grammar...",Nguyễn Minh Tiến,GitHub Copilot,High,To Do,ELW-1.4,2026-04-15,2026-04-18,5
