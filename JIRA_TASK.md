@@ -23,6 +23,7 @@ Acceptance Criteria:
 Work Log (Daily task assignment):
 - 2026-04-01: Nguyễn Hoàng Anh Khoa - Tạo repo, checkout nhánh `release/full-source-code`, phân tích cấu trúc.
 - 2026-04-02: GitHub Copilot (AI) - Cập nhật `README.md`, tạo `JIRA_TASK.md`, ghi chú nhánh, commit & push.
+- 2026-04-02: Nguyễn Thị Thùy Nhung - Kiểm tra và review nội dung tính năng, lên kế hoạch Jira.
 
 Sub-tasks:
 - [ ] Xác định yêu cầu tiếp theo từ khách hàng
