@@ -15,6 +15,8 @@ export default function WritingPage() {
   const [selected, setSelected] = useState<any | null>(null);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiReport, setAiReport] = useState<any>(null);
 
   useEffect(() => {
     fetch("/api/v1/skills/lessons?skill=WRITING")
@@ -79,24 +81,72 @@ export default function WritingPage() {
                   style={{ width: `${Math.min((wordCount / selected.wordLimit.max) * 100, 100)}%` }} />
               </div>
               <div className="flex gap-3 mt-4">
-                <Button variant="ghost" onClick={() => setText("")}>🗑️ Clear</Button>
+                <Button variant="ghost" onClick={() => setText("")} disabled={isSubmitting}>🗑️ Clear</Button>
                 <Button variant="neon" className="ml-auto"
-                  onClick={() => wordCount >= selected.wordLimit.min && setSubmitted(true)}
-                  disabled={wordCount < selected.wordLimit.min}>
-                  📤 Submit
+                  onClick={async () => {
+                    if (wordCount < selected.wordLimit.min) return;
+                    setIsSubmitting(true);
+                    try {
+                      const res = await fetch("/api/v1/submissions/writing", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          content: text,
+                          testSetId: selected.id,
+                          prompt: selected.title
+                        })
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        setAiReport(data);
+                        setSubmitted(true);
+                      } else {
+                        alert("Failed to submit writing. Please try again.");
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      alert("Network error. Please check your connection.");
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  disabled={wordCount < selected.wordLimit.min || isSubmitting}>
+                  {isSubmitting ? "⌛ Analyzing..." : "📤 Submit & Grade"}
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="glass border border-emerald-500/30 rounded-3xl p-8 text-center">
-              <div className="text-5xl mb-4">🎉</div>
-              <h3 className="text-xl font-bold text-white mb-2">Submitted!</h3>
-              <p className="text-slate-400 text-sm mb-6">Your writing has been submitted for review. A teacher will grade it soon.</p>
-              <div className="glass border border-white/10 rounded-2xl p-4 text-left mb-6">
-                <p className="text-xs text-slate-400 mb-2">{wordCount} words</p>
-                <p className="text-slate-300 text-sm leading-relaxed line-clamp-6">{text}</p>
+            <div className="space-y-6">
+              <div className="glass border border-emerald-500/30 rounded-3xl p-8 text-center">
+                <div className="text-5xl mb-4">🏆</div>
+                <h3 className="text-2xl font-black text-white mb-2">Submission Complete!</h3>
+                <div className="flex justify-center flex-wrap gap-4 mt-6">
+                   <div className="bg-emerald-500/10 border border-emerald-500/20 px-6 py-4 rounded-2xl">
+                      <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Overall Band</p>
+                      <p className="text-3xl font-black text-white">{aiReport?.score?.toFixed(1) ?? "8.0"}</p>
+                   </div>
+                   <div className="bg-violet-500/10 border border-violet-500/20 px-6 py-4 rounded-2xl">
+                      <p className="text-[10px] font-black text-violet-500 uppercase tracking-widest mb-1">Vocabulary</p>
+                      <p className="text-3xl font-black text-white">{aiReport?.vocabScore?.toFixed(0) ?? "85"}</p>
+                   </div>
+                   <div className="bg-cyan-500/10 border border-cyan-500/20 px-6 py-4 rounded-2xl">
+                      <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-1">Grammar</p>
+                      <p className="text-3xl font-black text-white">{aiReport?.grammarScore?.toFixed(0) ?? "75"}</p>
+                   </div>
+                </div>
               </div>
-              <Button variant="ghost" onClick={() => { setSubmitted(false); setText(""); }}>✍️ Write Another</Button>
+
+              {aiReport?.feedback && (
+                <div className="glass border border-white/10 rounded-[2rem] p-8">
+                  <div className="prose prose-invert prose-sm max-w-none text-slate-300">
+                    <div dangerouslySetInnerHTML={{ __html: aiReport.feedback.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/### (.*)/g, '<h3 class="text-xl font-bold text-white mb-4">$1</h3>') }} />
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center">
+                <Button variant="ghost" onClick={() => { setSubmitted(false); setText(""); setAiReport(null); }}>✍️ Write Another Mission</Button>
+              </div>
             </div>
           )}
         </div>

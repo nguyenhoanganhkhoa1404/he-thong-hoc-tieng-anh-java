@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/ui/Button";
 import { mockPlan } from "@/data/mockData";
 import { getStudyStats, StudyStats } from "@/components/StudyTracker";
+import ProgressCircle from "@/components/ui/ProgressCircle";
 
 const PLAN_TASKS = [
   { id: "t1", title: "Learn 20 new words", type: "vocabulary" as const, durationMinutes: 15 },
@@ -23,11 +24,18 @@ interface CourseFromApi {
   price?: number;
 }
 
+interface SkillProgress {
+  completedLessons: number;
+  averageScore: number;
+  level: string;
+}
+
 interface ProgressFromApi {
   userId: string;
   totalLessonsCompleted: number;
   averageScore: number;
   currentLevel: string;
+  bySkill: Record<string, SkillProgress>;
 }
 
 function StatCard({ icon, label, value, sub, color }: { icon: string; label: string; value: string | number; sub?: string; color: string }) {
@@ -52,6 +60,25 @@ export default function StudentDashboard() {
   const [vocabCount, setVocabCount] = useState<number | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [studyStats, setStudyStats] = useState<StudyStats | null>(null);
+  const [recommendation, setRecommendation] = useState<any>(null);
+
+  useEffect(() => {
+    if (progress?.bySkill) {
+      const skills = Object.entries(progress.bySkill);
+      const lowest = skills.sort((a: any, b: any) => a[1].averageScore - b[1].averageScore)[0];
+      
+      const recs: Record<string, any> = {
+        reading: { title: "Speed Reading Mastery", desc: "Your reading score is a bit low. This lesson will help you scan text faster.", icon: "📖", link: "/reading", xp: 50 },
+        writing: { title: "Grammar & Structure", desc: "Based on your last essay, auxiliary verbs need work. This will boost your score by ~15%.", icon: "✍️", link: "/writing", xp: 50 },
+        speaking: { title: "Pronunciation Workshop", desc: "Practice key vowel sounds to improve your fluency and accuracy scores.", icon: "🎤", link: "/speaking", xp: 50 },
+        listening: { title: "Audio Immersion", desc: "Try this A2 level listening task to improve your comprehension speed.", icon: "🎧", link: "/listening", xp: 50 },
+      };
+      
+      setRecommendation(lowest ? recs[lowest[0]] : recs.writing);
+    } else {
+      setRecommendation({ title: "Grammar: Present Perfect", desc: "Start your journey with a core grammar lesson to boost your foundations.", icon: "📝", link: "/grammar", xp: 50 });
+    }
+  }, [progress]);
 
   useEffect(() => {
     setStudyStats(getStudyStats());
@@ -117,31 +144,39 @@ export default function StudentDashboard() {
     <div className="min-h-screen flex flex-col pt-16">
       <main className="flex-1 p-4 md:p-8 w-full max-w-7xl mx-auto">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <p className="text-slate-400 text-sm mb-1">Welcome back,</p>
-            <h1 className="text-3xl font-extrabold text-white">
-              {user?.displayName || "Learner"} <span className="gradient-text">✨</span>
-            </h1>
-            <div className="flex items-center gap-4 mt-3">
-              <span className="glass border border-violet-500/30 px-3 py-1 rounded-full text-xs text-violet-300">
-                Level {user?.level || progress?.currentLevel || "A1"}
-              </span>
-              <span className="glass border border-cyan-500/30 px-3 py-1 rounded-full text-xs text-cyan-300">
-                🔥 {user?.streak ?? 0} day streak
-              </span>
-              <span className="glass border border-yellow-500/30 px-3 py-1 rounded-full text-xs text-yellow-300">
-                ⚡ {user?.xp ?? 0} XP
-              </span>
-            </div>
-          </div>
+          {/* Premium Header */}
+          <div className="relative mb-10 p-8 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
+            {/* Background Glows */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/20 blur-[100px] -z-10" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-600/20 blur-[100px] -z-10" />
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <p className="text-violet-400 text-xs font-bold uppercase tracking-[0.3em] mb-2">Welcome Back, Cadet</p>
+                <h1 className="text-4xl font-black text-white tracking-tight mb-2">
+                  {user?.displayName || "Learner"} <span className="text-3xl">🚀</span>
+                </h1>
+                <div className="flex items-center gap-6 mt-4">
+                   <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Active Streak</span>
+                      <span className="text-xl font-black text-orange-400">🔥 {user?.streak ?? 0} DAYS</span>
+                   </div>
+                   <div className="w-px h-8 bg-white/10" />
+                   <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Total Mastery</span>
+                      <span className="text-xl font-black text-yellow-500">⚡ {user?.xp ?? 0} XP</span>
+                   </div>
+                </div>
+              </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatCard icon="📚" label="Available Courses" value={dataLoading ? "..." : courses.length} sub="In the system" color="from-violet-900/30 to-violet-800/10" />
-            <StatCard icon="🎯" label="Avg Score" value={progress ? `${Math.round(progress.averageScore)}%` : "—"} sub="From quiz history" color="from-cyan-900/30 to-cyan-800/10" />
-            <StatCard icon="🔤" label="Total Words" value={vocabCount ?? "..."} sub="In vocabulary DB" color="from-emerald-900/30 to-emerald-800/10" />
-            <StatCard icon="📝" label="Completed" value={progress?.totalLessonsCompleted ?? "—"} sub="Quizzes + writing" color="from-amber-900/30 to-amber-800/10" />
+              {/* Skill Progress Overview */}
+              <div className="flex gap-4 md:gap-8 bg-black/20 p-6 rounded-3xl backdrop-blur-sm border border-white/5">
+                <ProgressCircle icon="📖" label="Reading" value={progress?.bySkill?.reading?.averageScore || 0} color="#8b5cf6" size="sm" />
+                <ProgressCircle icon="🎧" label="Listen" value={progress?.bySkill?.listening?.averageScore || 0} color="#06b6d4" size="sm" />
+                <ProgressCircle icon="🎤" label="Speak" value={progress?.bySkill?.speaking?.averageScore || 0} color="#ec4899" size="sm" />
+                <ProgressCircle icon="✍️" label="Write" value={progress?.bySkill?.writing?.averageScore || 0} color="#f59e0b" size="sm" />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -245,6 +280,52 @@ export default function StudentDashboard() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* AI Suggested Lesson */}
+            <div className="glass-dark border-2 border-violet-500/20 rounded-3xl p-6 relative overflow-hidden group">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-violet-600/20 blur-3xl group-hover:bg-violet-600/40 transition-colors" />
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <span className="bg-violet-600/30 text-violet-300 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">AI Recommendation</span>
+                  <h3 className="text-xl font-black text-white mt-2">{recommendation?.title}</h3>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-2xl shadow-lg">
+                  {recommendation?.icon || "🎯"}
+                </div>
+              </div>
+              <p className="text-sm text-slate-400 mb-6 font-medium leading-relaxed">
+                {recommendation?.desc}
+              </p>
+              <Link href={recommendation?.link || "/courses"}>
+                <Button variant="neon" className="w-full">START LESSON +{recommendation?.xp} XP</Button>
+              </Link>
+            </div>
+
+            {/* Daily Mission */}
+            <div className="glass-dark border-2 border-orange-500/20 rounded-3xl p-6 relative overflow-hidden group">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-600/20 blur-3xl group-hover:bg-orange-600/40 transition-colors" />
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <span className="bg-orange-600/30 text-orange-300 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">Daily Mission</span>
+                  <h3 className="text-xl font-black text-white mt-2">The Polyglot Sprint</h3>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-600 to-amber-500 flex items-center justify-center text-2xl shadow-lg">
+                  🏆
+                </div>
+              </div>
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-xs font-bold uppercase tracking-tighter">
+                  <span className="text-slate-500">Completed 2/3 Tasks</span>
+                  <span className="text-orange-400">Next: 15min Speaking</span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-orange-600 to-amber-400 w-[66%] shadow-[0_0_15px_rgba(249,115,22,0.4)]" />
+                </div>
+              </div>
+              <Button variant="outline" className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300">VIEW ALL MISSIONS</Button>
+            </div>
+          </div>
+
           {/* Quick Actions */}
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {[
@@ -253,7 +334,9 @@ export default function StudentDashboard() {
               { href: "/listening", icon: "🎧", label: "Listening" },
               { href: "/speaking", icon: "🎤", label: "Speaking" },
               { href: "/writing", icon: "✍️", label: "Writing" },
-              { href: "/quiz", icon: "🎯", label: "Take Quiz" },
+              { href: "/quiz", icon: "🎯", label: "Quiz" },
+              { href: "/games", icon: "🎮", label: "Games" },
+              { href: "/tests", icon: "📄", label: "Tests" },
             ].map(a => (
               <Link key={a.href} href={a.href}>
                 <div className="glass border border-white/10 rounded-xl p-4 text-center card-hover cursor-pointer h-full flex flex-col items-center justify-center">

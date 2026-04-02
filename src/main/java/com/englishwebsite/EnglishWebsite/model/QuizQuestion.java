@@ -13,6 +13,9 @@ public class QuizQuestion {
     @Column(name = "lesson_id", length = 50)
     private String lessonId;
 
+    @Column(name = "test_set_id", length = 50)
+    private String testSetId;
+
     @Column(length = 20)
     private String type; // MULTIPLE_CHOICE, FILL_BLANK, DRAG_DROP
 
@@ -28,8 +31,14 @@ public class QuizQuestion {
     @Column(name = "correct_answers_json", columnDefinition = "TEXT")
     private String correctAnswersJson;
 
+    @Column(columnDefinition = "TEXT")
+    private String explanation;
+
     @Column(name = "display_order")
     private int order;
+
+    @Column(name = "difficulty_level", length = 10)
+    private String difficultyLevel; // A1, A2, B1, B2, C1, C2
 
     public QuizQuestion() {}
 
@@ -37,6 +46,8 @@ public class QuizQuestion {
     public void setId(String id) { this.id = id; }
     public String getLessonId() { return lessonId; }
     public void setLessonId(String lessonId) { this.lessonId = lessonId; }
+    public String getTestSetId() { return testSetId; }
+    public void setTestSetId(String testSetId) { this.testSetId = testSetId; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
     public String getQuestionText() { return questionText; }
@@ -49,4 +60,10 @@ public class QuizQuestion {
     public void setCorrectAnswersJson(String correctAnswersJson) { this.correctAnswersJson = correctAnswersJson; }
     public int getOrder() { return order; }
     public void setOrder(int order) { this.order = order; }
+
+    public String getExplanation() { return explanation; }
+    public void setExplanation(String explanation) { this.explanation = explanation; }
+
+    public String getDifficultyLevel() { return difficultyLevel; }
+    public void setDifficultyLevel(String difficultyLevel) { this.difficultyLevel = difficultyLevel; }
 }

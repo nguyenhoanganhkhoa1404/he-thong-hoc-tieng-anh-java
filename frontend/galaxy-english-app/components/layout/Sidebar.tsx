@@ -19,6 +19,8 @@ const studentLinks: SidebarItem[] = [
   { href: "/speaking", icon: "🎤", label: "Speaking" },
   { href: "/quiz", icon: "🎯", label: "Quiz" },
   { href: "/writing", icon: "✍️", label: "Writing" },
+  { href: "/games", icon: "🎮", label: "Games" },
+  { href: "/tests", icon: "📄", label: "Tests" },
   { href: "/plan", icon: "📅", label: "Learning Plan" },
   { href: "/forum", icon: "💬", label: "Forum" },
 ];
@@ -28,7 +30,10 @@ const teacherLinks: SidebarItem[] = [
   { href: "/dashboard/teacher/courses", icon: "📚", label: "My Courses" },
   { href: "/dashboard/teacher/students", icon: "👥", label: "Students" },
   { href: "/dashboard/teacher/create", icon: "➕", label: "Create Course" },
+  { href: "/dashboard/teacher/builder", icon: "🛠️", label: "Lesson Builder" },
   { href: "/dashboard/teacher/analytics", icon: "📊", label: "Analytics" },
+  { href: "/speaking", icon: "🎤", label: "Speaking" },
+  { href: "/dashboard/teacher/tests", icon: "📋", label: "Test Management" },
   { href: "/forum", icon: "💬", label: "Forum" },
 ];
 
@@ -58,25 +63,40 @@ export default function DashboardSidebar() {
         </div>
       </div>
 
-      {/* User Card */}
-      <div className="px-4 py-4 border-b border-white/10">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-violet-900/20 to-cyan-900/20 border border-violet-500/20">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center font-bold text-sm">
-            {user?.displayName?.charAt(0).toUpperCase() || "U"}
+      {/* User Card - Gamified */}
+      <div className="px-4 py-6 border-b border-white/10 bg-gradient-to-b from-white/[0.02] to-transparent">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-cyan-500 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative w-12 h-12 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center font-black text-lg text-white">
+              {user?.displayName?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-600 border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold shadow-xl">
+              {user?.level || "A1"}
+            </div>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{user?.displayName || "User"}</p>
-            {!isTeacher ? (
-              <p className="text-xs text-violet-400">
-                {user?.level || "A1"} · {user?.xp || 0} XP
-              </p>
-            ) : (
-              <p className="text-xs text-emerald-400 font-bold tracking-widest uppercase">
-                {user?.specialization || "Teacher"}
-              </p>
-            )}
+            <p className="text-sm font-black text-white truncate tracking-tight">{user?.displayName || "Learner"}</p>
+            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest leading-none mt-1">
+              {isTeacher ? "Sensei Mode" : "Mastery Level"}
+            </p>
           </div>
         </div>
+
+        {!isTeacher && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-[10px] font-bold">
+              <span className="text-slate-400 uppercase tracking-tighter">XP Progress</span>
+              <span className="text-yellow-400">{(user?.xp || 0) % 1000} / 1000</span>
+            </div>
+            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden p-[2px] border border-white/5">
+              <div 
+                className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000"
+                style={{ width: `${((user?.xp || 0) % 1000) / 10}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

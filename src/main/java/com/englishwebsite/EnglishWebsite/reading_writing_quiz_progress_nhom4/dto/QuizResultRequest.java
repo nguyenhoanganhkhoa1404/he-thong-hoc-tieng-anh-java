@@ -9,6 +9,7 @@ public class QuizResultRequest {
 
     private String userId;
     private String lessonId;
+    private Integer score;
     private Map<String, String> answers;
     private long timeSpentSeconds;
 
@@ -16,6 +17,8 @@ public class QuizResultRequest {
     public void setUserId(String userId) { this.userId = userId; }
     public String getLessonId() { return lessonId; }
     public void setLessonId(String lessonId) { this.lessonId = lessonId; }
+    public Integer getScore() { return score; }
+    public void setScore(Integer score) { this.score = score; }
     public Map<String, String> getAnswers() { return answers; }
     public void setAnswers(Map<String, String> answers) { this.answers = answers; }
     public long getTimeSpentSeconds() { return timeSpentSeconds; }

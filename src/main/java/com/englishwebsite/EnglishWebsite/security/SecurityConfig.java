@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/listening/**", "/speaking/**", "/quiz/**", "/writing/**",
                                 "/plan/**", "/forum/**", "/login/**", "/register/**",
                                 "/dashboard/**", "/admin/**", "/404/**", "/placement/**", "/profile/**",
+                                "/games/**", "/tests/**",
                                 // Legacy group routes
                                 "/nhom1-auth/**", "/nhom2-vocab-grammar/**", "/nhom3-listening-speaking/**",
                                 "/nhom4-writing-quiz-progress/**", "/nhom5-plan-forum/**", "/nhom6-teacher-admin/**",
@@ -65,6 +66,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                         .requestMatchers("/api/v1/realtime/**").permitAll()
+                        // New Feature APIs
+                        .requestMatchers("/api/v1/audio/**").permitAll()
+                        .requestMatchers("/api/v1/games/**").permitAll()
                         // Allow nhom5 endpoints without authentication for frontend demo
                         .requestMatchers("/api/achievements/**").permitAll()
                         .requestMatchers("/api/daily-plan/**").permitAll()

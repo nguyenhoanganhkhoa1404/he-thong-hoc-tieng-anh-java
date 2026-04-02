@@ -151,4 +151,20 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok("Đăng xuất thành công");
     }
+
+    @PostMapping("/level/promote")
+    public ResponseEntity<User> promoteLevel() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        User updated = userService.promoteUserLevel(auth.getName());
+        return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/level/demote")
+    public ResponseEntity<User> demoteLevel() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        User updated = userService.demoteUserLevel(auth.getName());
+        return ResponseEntity.ok(updated);
+    }
 }

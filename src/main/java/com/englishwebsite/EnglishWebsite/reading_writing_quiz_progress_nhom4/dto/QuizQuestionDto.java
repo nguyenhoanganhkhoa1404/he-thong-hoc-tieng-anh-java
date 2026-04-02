@@ -17,6 +17,7 @@ public class QuizQuestionDto {
     private List<String> correctAnswers;
     private int order;
     private String explanation;
+    private String difficultyLevel;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -36,4 +37,6 @@ public class QuizQuestionDto {
     public void setOrder(int order) { this.order = order; }
     public String getExplanation() { return explanation; }
     public void setExplanation(String explanation) { this.explanation = explanation; }
+    public String getDifficultyLevel() { return difficultyLevel; }
+    public void setDifficultyLevel(String difficultyLevel) { this.difficultyLevel = difficultyLevel; }
 }

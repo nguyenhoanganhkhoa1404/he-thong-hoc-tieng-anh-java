@@ -2,6 +2,7 @@ package com.englishwebsite.EnglishWebsite.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Model đại diện cho người dùng trong hệ thống
@@ -37,7 +38,7 @@ public class User {
     
     // Thông tin bổ sung cho học viên
     @Column(length = 10)
-    private String level; // A1, A2, B1, B2, C1, C2
+    private String level = "A1"; // A1, A2, B1, B2, C1, C2
 
     private Integer placementTestScore;
     
@@ -45,6 +46,9 @@ public class User {
     private String teacherId;
     private String specialization;
     private boolean active;
+    
+    private Integer streak = 0;
+    private Integer xp = 0;
 
     // Constructors
     public User() {
@@ -180,7 +184,40 @@ public class User {
         this.active = active;
     }
 
+    public Integer getStreak() {
+        return streak;
+    }
+
+    public void setStreak(Integer streak) {
+        this.streak = streak;
+    }
+
+    public Integer getXp() {
+        return xp;
+    }
+
+    public void setXp(Integer xp) {
+        this.xp = xp;
+    }
+
     // Helper methods
+    // Leveling Logic
+    private static final List<String> LEVELS = List.of("A1", "A2", "B1", "B2", "C1", "C2");
+
+    public void promoteLevel() {
+        int currentIndex = LEVELS.indexOf(this.level != null ? this.level : "A1");
+        if (currentIndex < LEVELS.size() - 1) {
+            this.level = LEVELS.get(currentIndex + 1);
+        }
+    }
+
+    public void demoteLevel() {
+        int currentIndex = LEVELS.indexOf(this.level != null ? this.level : "A1");
+        if (currentIndex > 0) {
+            this.level = LEVELS.get(currentIndex - 1);
+        }
+    }
+
     public boolean isLearner() {
         return "LEARNER".equalsIgnoreCase(role);
     }

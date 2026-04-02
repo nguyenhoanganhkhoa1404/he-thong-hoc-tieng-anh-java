@@ -124,6 +124,56 @@ public class VocabularyGrammarService {
         return new PlacementTestResultDto(uid, s, level, "Placement test submitted and level updated.");
     }
 
+    public Map<String, Object> reportPerformance(String userId, boolean correct) {
+        String uid = userId != null ? userId : "user-demo";
+        User user = userRepository.findById(uid).orElse(null);
+        if (user == null) return Map.of("error", "User not found");
+
+        int currentStreak = user.getStreak() != null ? user.getStreak() : 0;
+        String oldLevel = user.getLevel() != null ? user.getLevel() : "A1";
+
+        if (correct) {
+            // Increase streak on correct answer
+            // If the streak was negative (wrong answers), reset to 1
+            if (currentStreak < 0) {
+                user.setStreak(1);
+            } else {
+                user.setStreak(currentStreak + 1);
+            }
+
+            // Promotion: 10 correct answers in a row
+            if (user.getStreak() >= 10) {
+                user.promoteLevel();
+                user.setStreak(0); // Reset streak after leveling up
+            }
+        } else {
+            // Decrease streak on wrong answer
+            // If the streak was positive, reset to -1
+            if (currentStreak > 0) {
+                user.setStreak(-1);
+            } else {
+                user.setStreak(currentStreak - 1);
+            }
+
+            // Demotion: 5 incorrect answers in a row
+            if (user.getStreak() <= -5) {
+                user.demoteLevel();
+                user.setStreak(0); // Reset streak after leveling down
+            }
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return Map.of(
+            "userId", uid,
+            "correct", correct,
+            "newStreak", user.getStreak(),
+            "newLevel", user.getLevel() != null ? user.getLevel() : "A1",
+            "levelChanged", !oldLevel.equals(user.getLevel())
+        );
+    }
+
     public List<VocabularyItemDto> listVocabulary(String userId, String topic, String level) {
         String uid = userId != null ? userId : "user-demo";
         List<VocabularyItem> items;

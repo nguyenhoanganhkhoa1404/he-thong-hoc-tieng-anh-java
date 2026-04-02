@@ -89,6 +89,8 @@ export default function VocabularyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  const [userLevel, setUserLevel] = useState<string>("A1");
+  const [userStreak, setUserStreak] = useState<number>(0);
   const PAGE_SIZE = 48;
 
   const fetchWords = useCallback(async (lvl: Level | "ALL") => {
@@ -146,9 +148,46 @@ export default function VocabularyPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [studyMode, studyIndex, filtered, toggleFlip]);
 
+  const [levelChangeMsg, setLevelChangeMsg] = useState<string | null>(null);
+
+  const report = async (correct: boolean) => {
+    try {
+      const res = await fetch("/api/v1/vocab/report-result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correct })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.levelChanged) {
+          const msg = data.newStreak >= 0 ? 
+            `🚀 PROMOTED TO ${data.newLevel}!` : 
+            `📚 ADAPTED TO ${data.newLevel}`;
+          setLevelChangeMsg(msg);
+          setTimeout(() => setLevelChangeMsg(null), 5000);
+        }
+        setUserLevel(data.newLevel);
+        setUserStreak(data.newStreak);
+      }
+      setStudyIndex(p => Math.min(filtered.length-1, p+1));
+    } catch (e) { console.error(e); }
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-7xl mx-auto">
+        {/* Animated Level Change Notification */}
+        {levelChangeMsg && (
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 duration-500">
+             <div className="bg-gradient-to-r from-violet-600 to-cyan-600 p-1 rounded-2xl shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                <div className="bg-black/80 backdrop-blur-xl px-8 py-4 rounded-xl text-white font-black text-xl tracking-tighter flex items-center gap-4">
+                   <span className="text-3xl animate-bounce">✨</span>
+                   {levelChangeMsg}
+                   <span className="text-3xl animate-bounce" style={{ animationDelay: '200ms' }}>✨</span>
+                </div>
+             </div>
+          </div>
+        )}
         {/* Header */}
         <div className="text-center mb-12">
           <p className="text-violet-400 text-sm font-semibold uppercase tracking-widest mb-3">✦ Nhóm 2 — Vocabulary</p>
@@ -212,21 +251,52 @@ export default function VocabularyPage() {
         {!loading && !error && (
           filtered.length > 0 ? (
             studyMode ? (
-              <div className="flex flex-col items-center justify-center py-10">
-                 <div className="w-full max-w-xl aspect-video md:h-[400px]">
+              <div className="flex flex-col items-center justify-center py-10 w-full">
+                 <div className="flex items-center gap-8 mb-8">
+                    <div className="text-center">
+                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Current Level</p>
+                       <p className="text-2xl font-black text-white">{userLevel}</p>
+                    </div>
+                    <div className="h-8 w-px bg-white/10" />
+                    <div className="text-center">
+                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Performance Streak</p>
+                       <p className={`text-2xl font-black ${userStreak >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          {userStreak > 0 ? `+${userStreak}` : userStreak}
+                       </p>
+                    </div>
+                 </div>
+
+                 <div className="w-full max-w-xl aspect-video md:h-[350px]">
                    <FlashCard 
                      word={filtered[studyIndex]} 
                      isFlipped={flippedCards.has(filtered[studyIndex].id)} 
                      onFlip={() => toggleFlip(filtered[studyIndex].id)} 
                    />
                  </div>
-                 <div className="flex items-center gap-6 mt-10">
-                   <Button variant="ghost" onClick={() => setStudyIndex(p => Math.max(0, p-1))} disabled={studyIndex === 0}>← Prev</Button>
-                   <span className="text-slate-400 font-medium">{studyIndex + 1} / {filtered.length}</span>
-                   <Button variant="ghost" onClick={() => setStudyIndex(p => Math.min(filtered.length-1, p+1))} disabled={studyIndex === filtered.length - 1}>Next →</Button>
+
+                 <div className="flex flex-col items-center gap-6 mt-10">
+                    <div className="flex gap-4">
+                       <button 
+                          onClick={() => report(false)}
+                          className="px-8 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold hover:bg-red-500/20 transition-all"
+                       >
+                          I don't know this ❌
+                       </button>
+                       <button 
+                          onClick={() => report(true)}
+                          className="px-8 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold hover:bg-emerald-500/20 transition-all"
+                       >
+                          Mastered it! ✅
+                       </button>
+                    </div>
+
+                    <div className="flex items-center gap-6 mt-4">
+                      <Button variant="ghost" onClick={() => setStudyIndex(p => Math.max(0, p-1))} disabled={studyIndex === 0}>← Prev</Button>
+                      <span className="text-slate-400 font-medium">{studyIndex + 1} / {filtered.length}</span>
+                      <Button variant="ghost" onClick={() => setStudyIndex(p => Math.min(filtered.length-1, p+1))} disabled={studyIndex === filtered.length - 1}>Next →</Button>
+                    </div>
                  </div>
-                 <p className="text-xs text-slate-500 mt-6 md:hidden">Tip: Tap card to flip. Use buttons to navigate.</p>
-                 <p className="text-xs text-slate-500 mt-6 hidden md:block">Tip: Use Arrow Keys to navigate, Space to flip.</p>
+                 <p className="text-xs text-slate-500 mt-6 hidden md:block">Tip: Mastered items help you level up. Incorrect items may lower difficulty.</p>
               </div>
             ) : (
               <>

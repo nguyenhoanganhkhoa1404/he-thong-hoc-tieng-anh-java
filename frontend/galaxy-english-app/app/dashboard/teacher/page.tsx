@@ -176,17 +176,23 @@ export default function TeacherDashboard() {
                 <Button variant="neon" size="sm" className="w-full">➕ Create Now</Button>
               </div>
 
-              {/* Removed Fake Recent Students Leaderboard for Realism */}
-              <div className="glass border border-white/10 rounded-2xl p-5">
-                <h2 className="text-sm font-bold text-white mb-4">📢 System Status</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">✅</div>
-                    <div>
-                      <p className="text-sm font-bold text-white">Database Connected</p>
-                      <p className="text-xs text-slate-400">Live metrics actively syncing.</p>
-                    </div>
-                  </div>
+              {/* AI Class Insights - NEW */}
+              <div className="glass-dark border-2 border-violet-500/20 rounded-2xl p-6 relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-violet-600/20 blur-3xl" />
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">🧠</span>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest">AI Class Insights</h2>
+                </div>
+                <div className="space-y-4">
+                   <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                      <p className="text-[10px] font-black text-red-400 uppercase mb-1">⚠️ Urgent Warning</p>
+                      <p className="text-xs text-slate-300 font-medium">3 students are struggling with <span className="text-white font-bold">Past Perfect</span>. Success rate dropped by 40%.</p>
+                   </div>
+                   <div className="p-3 rounded-xl bg-violet-600/10 border border-violet-500/20">
+                      <p className="text-[10px] font-black text-violet-400 uppercase mb-1">💡 AI Recommendation</p>
+                      <p className="text-xs text-slate-300 font-medium">Schedule a <span className="text-violet-300 font-bold">Speaking Workshop</span>. 70% of students show "Hesitation" in recent labs.</p>
+                   </div>
+                   <Button variant="ghost" size="sm" className="w-full text-[10px] font-black uppercase tracking-widest border-white/10">VIEW FULL CLASS REPORT</Button>
                 </div>
               </div>
             </div>

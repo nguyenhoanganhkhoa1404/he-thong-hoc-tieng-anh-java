@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import Achievements from "@/components/profile/Achievements";
 
 function ProfileContent() {
   const searchParams = useSearchParams();
@@ -115,6 +116,11 @@ function ProfileContent() {
                 <span className="text-xs px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 uppercase tracking-wider font-semibold">{profile.specialization || "Teacher"}</span>
               )}
             </div>
+            
+            <div className="w-full mt-8 border-t border-white/5 pt-6">
+               <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-4 text-left">Hall of Achievements</h3>
+               <Achievements userId={targetId as string} />
+            </div>
           </div>
 
           <form onSubmit={handleSave} className="space-y-5">
@@ -127,14 +133,11 @@ function ProfileContent() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 ml-1 uppercase tracking-wider">Display Name</label>
-              {readonly ? (
-                <div className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl text-sm">
-                  {profile.displayName || "Not specified"}
-                </div>
-              ) : (
-                <Input placeholder="Enter your display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
-              )}
+              <label className="block text-xs font-bold text-slate-400 mb-2 ml-1 uppercase tracking-wider">Display Name (Read-Only)</label>
+              <div className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl opacity-70 cursor-not-allowed text-sm">
+                {profile.displayName || "Not specified"}
+              </div>
+              <p className="text-xs text-slate-500 mt-2 ml-1">The display name cannot be modified.</p>
             </div>
 
             <div>

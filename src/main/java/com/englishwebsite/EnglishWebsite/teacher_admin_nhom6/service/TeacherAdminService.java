@@ -1,19 +1,20 @@
 package com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.service;
 
-import com.englishwebsite.EnglishWebsite.model.Course;
-import com.englishwebsite.EnglishWebsite.model.Notification;
-import com.englishwebsite.EnglishWebsite.model.User;
-import com.englishwebsite.EnglishWebsite.repository.CourseRepository;
-import com.englishwebsite.EnglishWebsite.repository.NotificationRepository;
-import com.englishwebsite.EnglishWebsite.repository.UserRepository;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.CourseDto;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.NotificationDto;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherAccountDto;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherStatsDto;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.StudentDto;
+import com.englishwebsite.EnglishWebsite.model.*;
+import com.englishwebsite.EnglishWebsite.repository.*;
+import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.*;
+import com.englishwebsite.EnglishWebsite.service.AchievementService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.firestore.*;
+import com.google.api.core.ApiFuture;
+import com.google.firebase.cloud.FirestoreClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -30,22 +31,42 @@ public class TeacherAdminService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final NotificationRepository notificationRepository;
+    private final TestSetRepository testSetRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
+    private final Firestore firestore;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper;
+    private final AchievementService achievementService;
 
     public TeacherAdminService(UserRepository userRepository,
                                CourseRepository courseRepository,
                                NotificationRepository notificationRepository,
-                               org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+                               TestSetRepository testSetRepository,
+                               QuizQuestionRepository quizQuestionRepository,
+                               Firestore firestore,
+                               org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+                               ObjectMapper objectMapper,
+                               AchievementService achievementService) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.notificationRepository = notificationRepository;
+        this.testSetRepository = testSetRepository;
+        this.quizQuestionRepository = quizQuestionRepository;
+        this.firestore = firestore;
         this.passwordEncoder = passwordEncoder;
+        this.objectMapper = objectMapper;
+        this.achievementService = achievementService;
     }
 
     // -------- Teacher / Admin Management (16) --------
 
     public TeacherAccountDto createTeacher(TeacherAccountDto request) {
         String uid = request.getUid() != null ? request.getUid() : "T-" + UUID.randomUUID().toString().substring(0, 8);
+        request.setUid(uid);
+        
+        // Firestore Sync
+        firestore.collection("users").document(uid).set(request);
+
         User user = userRepository.findById(uid).orElse(new User());
         user.setUid(uid);
         user.setEmail(request.getEmail());
@@ -66,7 +87,10 @@ public class TeacherAdminService {
         return userRepository.findById(uid).map(user -> {
             user.setActive(true);
             userRepository.save(user);
-            return convertToTeacherDto(user);
+            TeacherAccountDto dto = convertToTeacherDto(user);
+            // Firestore Sync
+            firestore.collection("users").document(uid).update("active", true);
+            return dto;
         });
     }
 
@@ -81,11 +105,15 @@ public class TeacherAdminService {
             userRepository.save(user);
         });
         request.setUid(uid);
+        // Firestore Sync
+        firestore.collection("users").document(uid).set(request);
         return request;
     }
 
     public void deleteTeacher(String uid) {
         userRepository.deleteById(uid);
+        // Firestore Sync
+        firestore.collection("users").document(uid).delete();
     }
 
     public List<TeacherAccountDto> listTeachers() {
@@ -150,6 +178,12 @@ public class TeacherAdminService {
 
     public CourseDto createCourse(CourseDto request) {
         String id = request.getId() != null ? request.getId() : "C-" + UUID.randomUUID().toString().substring(0, 8);
+        request.setId(id);
+        
+        // Save to Firestore
+        firestore.collection("courses").document(id).set(request);
+
+        // Save to MySQL (Legacy/Sync)
         Course course = new Course();
         course.setId(id);
         course.setTitle(request.getTitle());
@@ -157,14 +191,17 @@ public class TeacherAdminService {
         course.setLevel(request.getLevel());
         course.setPublished(request.isPublished());
         course.setModuleIds(request.getModuleIds());
-        
         course.setTeacherId(request.getTeacherId() != null ? request.getTeacherId() : "T-UNKNOWN");
         course.setPrice(request.getPrice() != null ? request.getPrice() : 0.0);
         course.setRating(request.getRating() != null ? request.getRating() : 0.0);
         course.setTotalStudents(request.getTotalStudents() != null ? request.getTotalStudents() : 0);
-        
         courseRepository.save(course);
-        request.setId(id);
+        
+        // Achievement Check
+        int courseCount = courseRepository.findByTeacherId(course.getTeacherId()).size();
+        int testCount = testSetRepository.findByTeacherId(course.getTeacherId()).size();
+        achievementService.checkAndAwardTeacherAchievements(course.getTeacherId(), courseCount, testCount);
+        
         return request;
     }
 
@@ -179,14 +216,21 @@ public class TeacherAdminService {
             course.setLevel(request.getLevel());
             course.setPublished(request.isPublished());
             course.setModuleIds(request.getModuleIds());
+            if (request.getTotalStudents() != null) {
+                course.setTotalStudents(request.getTotalStudents());
+            }
             courseRepository.save(course);
         });
         request.setId(courseId);
+        // Firestore Sync
+        firestore.collection("courses").document(courseId).set(request);
         return request;
     }
 
     public void deleteCourse(String courseId) {
         courseRepository.deleteById(courseId);
+        // Firestore Sync
+        firestore.collection("courses").document(courseId).delete();
     }
 
     public List<CourseDto> listCourses() {
@@ -226,6 +270,13 @@ public class TeacherAdminService {
 
     public NotificationDto createNotification(NotificationDto request) {
         String id = request.getId() != null ? request.getId() : "N-" + UUID.randomUUID().toString().substring(0, 8);
+        request.setId(id);
+        request.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : java.time.LocalDateTime.now());
+        
+        // Save to Firestore
+        firestore.collection("notifications").document(id).set(request);
+
+        // Save to MySQL
         Notification n = new Notification();
         n.setId(id);
         n.setTitle(request.getTitle());
@@ -233,9 +284,9 @@ public class TeacherAdminService {
         n.setTargetType(request.getTargetType() != null ? request.getTargetType() : "ALL");
         n.setTargetId(request.getTargetId());
         n.setRead(false);
-        n.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : java.time.LocalDateTime.now());
+        n.setCreatedAt(request.getCreatedAt());
         notificationRepository.save(n);
-        request.setId(id);
+        
         return request;
     }
 
@@ -255,6 +306,125 @@ public class TeacherAdminService {
             n.setRead(true);
             notificationRepository.save(n);
         });
+    }
+
+    // -------- Test Set Management (Nhóm 6: Khoa) --------
+
+    public TestSetDto createTestSet(TestSetDto request) {
+        String id = request.getId() != null ? request.getId() : "TS-" + UUID.randomUUID().toString().substring(0, 8);
+        request.setId(id);
+        
+        // Firestore Sync
+        firestore.collection("test_sets").document(id).set(request);
+
+        TestSet ts = new TestSet();
+        ts.setId(id);
+        ts.setName(request.getName());
+        ts.setType(request.getType());
+        ts.setDuration(request.getDuration());
+        ts.setLevel(request.getLevel());
+        ts.setDescription(request.getDescription());
+        ts.setTeacherId(request.getTeacherId());
+        testSetRepository.save(ts);
+        
+        // Achievement Check
+        int courseCount = courseRepository.findByTeacherId(ts.getTeacherId()).size();
+        int testCount = testSetRepository.findByTeacherId(ts.getTeacherId()).size();
+        achievementService.checkAndAwardTeacherAchievements(ts.getTeacherId(), courseCount, testCount);
+        
+        return request;
+    }
+
+    public List<TestSetDto> listTestSetsByTeacher(String teacherId) {
+        return testSetRepository.findByTeacherId(teacherId).stream()
+                .map(this::convertToTestSetDto)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<TestSetDto> getTestSet(String id) {
+        return testSetRepository.findById(id).map(ts -> {
+            TestSetDto dto = convertToTestSetDto(ts);
+            dto.setQuestions(quizQuestionRepository.findByTestSetId(id).stream()
+                    .map(this::convertToQuizQuestionDto)
+                    .collect(Collectors.toList()));
+            return dto;
+        });
+    }
+
+    public TestSetDto updateTestSet(String id, TestSetDto request) {
+        testSetRepository.findById(id).ifPresent(ts -> {
+            ts.setName(request.getName());
+            ts.setType(request.getType());
+            ts.setDuration(request.getDuration());
+            ts.setLevel(request.getLevel());
+            ts.setDescription(request.getDescription());
+            testSetRepository.save(ts);
+        });
+        request.setId(id);
+        // Firestore Sync
+        firestore.collection("test_sets").document(id).set(request);
+        return request;
+    }
+
+    public void deleteTestSet(String id) {
+        // Delete associated questions first? Usually JPA cascade or manual
+        List<QuizQuestion> questions = quizQuestionRepository.findByTestSetId(id);
+        quizQuestionRepository.deleteAll(questions);
+        testSetRepository.deleteById(id);
+        // Firestore Sync
+        firestore.collection("test_sets").document(id).delete();
+        // Note: In Firestore, we might also want to delete the subcollection or questions in another collection
+    }
+
+    public QuizQuestionDto saveQuestionToTestSet(String testSetId, QuizQuestionDto request) {
+        String id = request.getId() != null ? request.getId() : "QZ-" + UUID.randomUUID().toString().substring(0, 8);
+        request.setId(id);
+        request.setTestSetId(testSetId);
+
+        // Firestore Sync
+        firestore.collection("test_sets").document(testSetId)
+                .collection("questions").document(id).set(request);
+
+        QuizQuestion q = quizQuestionRepository.findById(id).orElse(new QuizQuestion());
+        q.setId(id);
+        q.setTestSetId(testSetId);
+        q.setType(request.getType());
+        q.setQuestionText(request.getQuestionText());
+        q.setCorrectAnswer(request.getCorrectAnswer());
+        q.setExplanation(request.getExplanation());
+        q.setOrder(request.getOrder());
+        q.setDifficultyLevel(request.getDifficultyLevel());
+
+        try {
+            if (request.getOptions() != null) {
+                q.setOptionsJson(objectMapper.writeValueAsString(request.getOptions()));
+            }
+            if (request.getCorrectAnswers() != null) {
+                q.setCorrectAnswersJson(objectMapper.writeValueAsString(request.getCorrectAnswers()));
+            }
+        } catch (JsonProcessingException e) {
+            // Log error
+        }
+
+        quizQuestionRepository.save(q);
+        return request;
+    }
+
+    public List<QuizQuestionDto> listQuestionsByTestSet(String testSetId) {
+        return quizQuestionRepository.findByTestSetId(testSetId).stream()
+                .map(this::convertToQuizQuestionDto)
+                .collect(Collectors.toList());
+    }
+
+    public void deleteQuestion(String questionId) {
+        Optional<QuizQuestion> q = quizQuestionRepository.findById(questionId);
+        if (q.isPresent()) {
+            String testSetId = q.get().getTestSetId();
+            quizQuestionRepository.deleteById(questionId);
+            // Firestore Sync
+            firestore.collection("test_sets").document(testSetId)
+                    .collection("questions").document(questionId).delete();
+        }
     }
 
     // -------- Helper Converters --------
@@ -297,6 +467,43 @@ public class TeacherAdminService {
         dto.setTargetId(n.getTargetId());
         dto.setCreatedAt(n.getCreatedAt());
         dto.setRead(n.isRead());
+        return dto;
+    }
+
+    private TestSetDto convertToTestSetDto(TestSet ts) {
+        TestSetDto dto = new TestSetDto();
+        dto.setId(ts.getId());
+        dto.setName(ts.getName());
+        dto.setType(ts.getType());
+        dto.setDuration(ts.getDuration());
+        dto.setLevel(ts.getLevel());
+        dto.setDescription(ts.getDescription());
+        dto.setTeacherId(ts.getTeacherId());
+        return dto;
+    }
+
+    private QuizQuestionDto convertToQuizQuestionDto(QuizQuestion q) {
+        QuizQuestionDto dto = new QuizQuestionDto();
+        dto.setId(q.getId());
+        dto.setLessonId(q.getLessonId());
+        dto.setTestSetId(q.getTestSetId());
+        dto.setType(q.getType());
+        dto.setQuestionText(q.getQuestionText());
+        dto.setCorrectAnswer(q.getCorrectAnswer());
+        dto.setExplanation(q.getExplanation());
+        dto.setOrder(q.getOrder());
+        dto.setDifficultyLevel(q.getDifficultyLevel());
+
+        try {
+            if (q.getOptionsJson() != null && !q.getOptionsJson().isEmpty()) {
+                dto.setOptions(objectMapper.readValue(q.getOptionsJson(), new TypeReference<List<String>>() {}));
+            }
+            if (q.getCorrectAnswersJson() != null && !q.getCorrectAnswersJson().isEmpty()) {
+                dto.setCorrectAnswers(objectMapper.readValue(q.getCorrectAnswersJson(), new TypeReference<List<String>>() {}));
+            }
+        } catch (JsonProcessingException e) {
+            // Log error
+        }
         return dto;
     }
 }

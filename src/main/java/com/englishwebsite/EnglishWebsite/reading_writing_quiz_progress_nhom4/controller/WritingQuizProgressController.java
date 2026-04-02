@@ -40,9 +40,10 @@ public class WritingQuizProgressController {
 
     @GetMapping("/quiz/questions")
     public ResponseEntity<List<QuizQuestionDto>> getAllQuizQuestions(
-            @RequestParam(required = false) Integer limit
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String level
     ) {
-        return ResponseEntity.ok(service.getAllQuestions(limit));
+        return ResponseEntity.ok(service.getAllQuestions(limit, level));
     }
 
     @GetMapping("/quiz/lesson/{lessonId}/questions")

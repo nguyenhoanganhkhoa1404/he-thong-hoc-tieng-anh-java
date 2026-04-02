@@ -99,7 +99,9 @@ export default function TeacherCoursesPage() {
                         </td>
                         <td className="py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                             <Button variant="outline" size="sm" className="px-2 py-1 text-xs">Edit</Button>
+                             <Link href={`/dashboard/teacher/courses/manage?id=${c.id}`}>
+                               <Button variant="outline" size="sm" className="px-2 py-1 text-xs text-left">Manage Content</Button>
+                             </Link>
                              <Button variant="outline" size="sm" className="px-2 py-1 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10">Archive</Button>
                           </div>
                         </td>

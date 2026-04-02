@@ -62,6 +62,16 @@ public class VocabController {
         return ResponseEntity.ok(updated);
     }
 
+    @PostMapping("/report-result")
+    public ResponseEntity<Map<String, Object>> reportResult(
+            Authentication auth,
+            @RequestBody Map<String, Boolean> body
+    ) {
+        boolean correct = body.getOrDefault("correct", true);
+        Map<String, Object> result = service.reportPerformance(uid(auth), correct);
+        return ResponseEntity.ok(result);
+    }
+
     private String uid(Authentication auth) {
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
             User user = userService.getUserByEmail(auth.getName());

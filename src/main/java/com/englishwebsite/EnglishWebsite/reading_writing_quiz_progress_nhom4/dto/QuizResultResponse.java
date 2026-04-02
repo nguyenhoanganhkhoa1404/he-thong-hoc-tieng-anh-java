@@ -11,6 +11,8 @@ public class QuizResultResponse {
     private int totalQuestions;
     private boolean passed;
     private long timeSpentSeconds;
+    private String currentLevel;
+    private Integer currentStreak;
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
@@ -24,4 +26,8 @@ public class QuizResultResponse {
     public void setPassed(boolean passed) { this.passed = passed; }
     public long getTimeSpentSeconds() { return timeSpentSeconds; }
     public void setTimeSpentSeconds(long timeSpentSeconds) { this.timeSpentSeconds = timeSpentSeconds; }
+    public String getCurrentLevel() { return currentLevel; }
+    public void setCurrentLevel(String currentLevel) { this.currentLevel = currentLevel; }
+    public Integer getCurrentStreak() { return currentStreak; }
+    public void setCurrentStreak(Integer currentStreak) { this.currentStreak = currentStreak; }
 }

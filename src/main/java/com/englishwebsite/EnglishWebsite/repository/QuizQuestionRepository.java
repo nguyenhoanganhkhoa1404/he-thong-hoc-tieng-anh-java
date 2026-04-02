@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, String> {
     List<QuizQuestion> findByLessonId(String lessonId);
+    List<QuizQuestion> findByTestSetId(String testSetId);
+    List<QuizQuestion> findByDifficultyLevel(String difficultyLevel);
 }

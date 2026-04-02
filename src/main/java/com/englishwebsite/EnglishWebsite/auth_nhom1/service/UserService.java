@@ -89,4 +89,65 @@ public class UserService {
         
         return userRepository.save(user);
     }
+
+    public void addXp(String userId, int amount) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("No user found"));
+        int currentXp = user.getXp() != null ? user.getXp() : 0;
+        user.setXp(currentXp + amount);
+        userRepository.save(user);
+    }
+
+    public void updateStreak(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("No user found"));
+        int streak = user.getStreak() != null ? user.getStreak() : 0;
+        user.setStreak(streak + 1);
+        userRepository.save(user);
+    }
+
+    public User getUserById(String uid) {
+        return userRepository.findById(uid).orElse(null);
+    }
+
+    public User saveUser(User user) {
+        user.setUpdatedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    public User promoteUserLevel(String email) {
+        User user = getUserByEmail(email);
+        if (user != null) {
+            user.promoteLevel();
+            return userRepository.save(user);
+        }
+        return null;
+    }
+
+    public User demoteUserLevel(String email) {
+        User user = getUserByEmail(email);
+        if (user != null) {
+            user.demoteLevel();
+            return userRepository.save(user);
+        }
+        return null;
+    }
+
+    public User setUserLevel(String userId, String level) {
+        User user = getUserById(userId);
+        if (user != null) {
+            user.setLevel(level);
+            return userRepository.save(user);
+        }
+        return null;
+    }
+
+    public User updateUserLevel(String userId, boolean promote) {
+        User user = getUserById(userId);
+        if (user != null) {
+            if (promote) user.promoteLevel();
+            else user.demoteLevel();
+            user.setUpdatedAt(LocalDateTime.now());
+            return userRepository.save(user);
+        }
+        return null;
+    }
 }

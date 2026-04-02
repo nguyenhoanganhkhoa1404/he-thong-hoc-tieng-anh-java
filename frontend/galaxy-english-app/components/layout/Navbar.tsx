@@ -44,24 +44,50 @@ export default function Navbar() {
     if (isAuthenticated && user?.displayName) {
       const fetchNotifs = async () => {
         try {
-          const res = await fetch(`/api/v1/forum/notifications/${user.displayName}`);
-          if (res.ok) {
-            const data = await res.json();
-            setNotifications(data);
+          const [forumRes, adminRes] = await Promise.all([
+            fetch(`/api/v1/forum/notifications/${user.displayName}`),
+            fetch(`/api/admin/notifications/user/${user.id}`).catch(() => ({ ok: false, json: () => [] }))
+          ]);
+
+          let allNotifs: any[] = [];
+          
+          if (forumRes.ok) {
+            const forumData = await forumRes.json();
+            allNotifs = [...allNotifs, ...forumData.map((n: any) => ({ ...n, type: 'forum' }))];
           }
+          
+          if (adminRes && adminRes.ok) {
+            const adminData = await adminRes.json();
+            allNotifs = [...allNotifs, ...adminData.map((n: any) => ({
+              ...n,
+              message: n.title + " - " + n.content,
+              type: 'admin'
+            }))];
+          }
+
+          allNotifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setNotifications(allNotifs);
         } catch(e) {}
       };
       fetchNotifs();
       interval = setInterval(fetchNotifs, 5000); // 5s ping
     }
     return () => { if (interval) clearInterval(interval); };
-  }, [isAuthenticated, user?.displayName]);
+  }, [isAuthenticated, user?.displayName, user?.id]);
 
-  const markNotifRead = async (id: string) => {
-    fetch(`/api/v1/forum/notifications/${id}/read`, { method: "POST" }).catch(e => {});
+  const markNotifRead = async (id: string, type?: string) => {
+    if (type === 'admin') {
+      fetch(`/api/admin/notifications/${id}/read`, { method: "POST" }).catch(e => {});
+    } else {
+      fetch(`/api/v1/forum/notifications/${id}/read`, { method: "POST" }).catch(e => {});
+    }
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     setNotifOpen(false);
-    if (pathname !== "/forum") router.push("/forum");
+    if (type === 'admin') {
+      // Optional: don't force a redirect for admin/enrollment notifications, or go to courses
+    } else {
+      if (pathname !== "/forum") router.push("/forum");
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -133,7 +159,7 @@ export default function Navbar() {
                         {notifications.length > 0 ? notifications.map(n => (
                           <div 
                             key={n.id} 
-                            onClick={() => markNotifRead(n.id)}
+                            onClick={() => markNotifRead(n.id, n.type)}
                             className={`p-4 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${!n.read ? "bg-violet-900/20" : ""}`}
                           >
                             <p className="text-sm text-slate-200 mb-1">{n.message}</p>
@@ -148,14 +174,27 @@ export default function Navbar() {
                 </div>
 
                 <div className="relative">
-                  <button
+                   <button
                     onClick={() => { setUserMenuOpen(!userMenuOpen); setNotifOpen(false); }}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass neon-border-purple hover:glow-purple transition-all"
                   >
                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold">
                       {initials}
                     </div>
-                    <span className="text-sm text-slate-300 max-w-[120px] truncate">{user?.displayName}</span>
+                    <div className="flex flex-col items-start leading-tight">
+                        <span className="text-sm font-bold text-slate-300 max-w-[120px] truncate">{user?.displayName}</span>
+                        {user?.level && (
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md border ${
+                                user.level === "A1" ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/10" :
+                                user.level === "A2" ? "border-cyan-500/50 text-cyan-400 bg-cyan-500/10" :
+                                user.level === "B1" ? "border-yellow-500/50 text-yellow-400 bg-yellow-500/10" :
+                                user.level === "B2" ? "border-orange-500/50 text-orange-400 bg-orange-500/10" :
+                                "border-violet-500/50 text-violet-400 bg-violet-500/10"
+                            }`}>
+                                Level {user.level}
+                            </span>
+                        )}
+                    </div>
                     <span className="text-xs text-slate-500">▾</span>
                   </button>
                   {userMenuOpen && (

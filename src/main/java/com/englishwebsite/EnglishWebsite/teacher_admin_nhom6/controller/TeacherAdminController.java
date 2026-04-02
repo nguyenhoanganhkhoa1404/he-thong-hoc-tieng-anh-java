@@ -1,14 +1,16 @@
 package com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.controller;
 
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.CourseDto;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.NotificationDto;
-import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.TeacherAccountDto;
+import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.dto.*;
 import com.englishwebsite.EnglishWebsite.teacher_admin_nhom6.service.TeacherAdminService;
+import com.englishwebsite.EnglishWebsite.service.FileParsingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -28,9 +30,23 @@ import java.util.Optional;
 public class TeacherAdminController {
 
     private final TeacherAdminService teacherAdminService;
+    private final FileParsingService fileParsingService;
 
-    public TeacherAdminController(TeacherAdminService teacherAdminService) {
+    public TeacherAdminController(TeacherAdminService teacherAdminService, FileParsingService fileParsingService) {
         this.teacherAdminService = teacherAdminService;
+        this.fileParsingService = fileParsingService;
+    }
+
+    @PostMapping("/test-sets/parse-file")
+    public ResponseEntity<?> parseFile(@RequestParam("file") MultipartFile file) {
+        try {
+            Map<String, Object> result = fileParsingService.parseFile(file);
+            return ResponseEntity.ok(result);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error parsing file: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     // -------- Teacher / Admin Management (16) --------
@@ -174,6 +190,53 @@ public class TeacherAdminController {
     @PostMapping("/notifications/{notificationId}/read")
     public ResponseEntity<Void> markNotificationAsRead(@PathVariable String notificationId) {
         teacherAdminService.markNotificationAsRead(notificationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // -------- Test Set Management (Nhóm 6: Khoa) --------
+
+    @PostMapping("/test-sets")
+    public ResponseEntity<TestSetDto> createTestSet(@RequestBody TestSetDto request) {
+        TestSetDto result = teacherAdminService.createTestSet(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @GetMapping("/test-sets/teacher/{teacherId}")
+    public ResponseEntity<List<TestSetDto>> listTestSetsByTeacher(@PathVariable String teacherId) {
+        return ResponseEntity.ok(teacherAdminService.listTestSetsByTeacher(teacherId));
+    }
+
+    @GetMapping("/test-sets/{id}")
+    public ResponseEntity<TestSetDto> getTestSet(@PathVariable String id) {
+        return teacherAdminService.getTestSet(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/test-sets/{id}")
+    public ResponseEntity<TestSetDto> updateTestSet(@PathVariable String id, @RequestBody TestSetDto request) {
+        return ResponseEntity.ok(teacherAdminService.updateTestSet(id, request));
+    }
+
+    @DeleteMapping("/test-sets/{id}")
+    public ResponseEntity<Void> deleteTestSet(@PathVariable String id) {
+        teacherAdminService.deleteTestSet(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/test-sets/{id}/questions")
+    public ResponseEntity<QuizQuestionDto> saveQuestionToTestSet(@PathVariable String id, @RequestBody QuizQuestionDto request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(teacherAdminService.saveQuestionToTestSet(id, request));
+    }
+
+    @GetMapping("/test-sets/{id}/questions")
+    public ResponseEntity<List<QuizQuestionDto>> listQuestionsByTestSet(@PathVariable String id) {
+        return ResponseEntity.ok(teacherAdminService.listQuestionsByTestSet(id));
+    }
+
+    @DeleteMapping("/questions/{questionId}")
+    public ResponseEntity<Void> deleteQuestion(@PathVariable String questionId) {
+        teacherAdminService.deleteQuestion(questionId);
         return ResponseEntity.noContent().build();
     }
 }
